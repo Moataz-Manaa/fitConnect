@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Title -->
+    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
+
+    <!-- Meta -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body id="bg" class="data-typography-1">
+    <div class="page-wraper">
+      <!-- Header -->
+      <app-header></app-header>
+      <!-- Header -->
+
+      <div class="page-content bg-white" style="height: 100vh">
+        <!-- Our Shop Cart-->
+        <section>
+          <div class="container">
+            <h1 style="margin-top: 25px; margin-bottom: 25px">Mes clients</h1>
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="table-responsive">
+                  <table
+                    class="table check-tbl wow fadeInUp"
+                    data-wow-delay="0.4s"
+                  >
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Age</th>
+                        <th>Pack réservé</th>
+                        <th>Date de création</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="
+                          let subscription of clientSubscriptions
+                            | paginate : { itemsPerPage: 5, currentPage: p }
+                        "
+                      >
+                        <td class="product-item-name">
+                          {{ subscription.nom }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ subscription.prenom }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ subscription.email }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ subscription.telephone }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ subscription.age }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ subscription.packNom }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ formatDate(subscription.dateCreation) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <pagination-controls
+                    style="text-align: right"
+                    (pageChange)="p = $event"
+                  ></pagination-controls>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Our Shop Cart-->
+      </div>
+
+      <!-- Footer -->
+      <app-footer></app-footer>
+      <!-- Footer End -->
+    </div>
+  </body>
+</html>

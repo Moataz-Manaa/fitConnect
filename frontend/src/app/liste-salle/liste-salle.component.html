@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      /* Ensure all cards have the same height */
+      .shop-card {
+        display: flex;
+        flex-direction: column;
+        height: 330px;
+        overflow: hidden;
+        border: 1px solid #ddd;
+      }
+
+      .dz-media {
+        flex: 1 1 auto;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .dz-media img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .dz-content {
+        padding: 15px;
+        flex: 0 0 auto;
+        text-align: center;
+      }
+
+      .shop-meta {
+        position: absolute;
+        bottom: 10px;
+        width: 100%;
+        text-align: center;
+      }
+
+      @media (max-width: 768px) {
+        .shop-card {
+          height: 350px;
+        }
+        .dz-media img {
+          height: 200px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .shop-card {
+          height: 300px;
+        }
+        .dz-media img {
+          height: 150px;
+        }
+      }
+    </style>
+  </head>
+  <body id="bg" class="data-typography-1">
+    <div class="page-wraper">
+      <!-- Header -->
+      <app-header></app-header>
+
+      <div class="page-content bg-white" style="height: 900px">
+        <section class="content-inner">
+          <div class="container">
+            <div class="row">
+              <div class="col-xl-8 col-lg-12 m-b30">
+                <div class="row">
+                  <div
+                    class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-12"
+                    *ngFor="let salle of filteredSalle"
+                  >
+                    <div
+                      class="shop-card style-1 hover-aware wow fadeInUp"
+                      data-wow-delay="0.6s"
+                    >
+                      <div class="dz-media">
+                        <img src="{{ salle.image }}" alt="{{ salle.nom }}" />
+                        <div class="shop-meta">
+                          <ul>
+                            <li>
+                              <a href="/detail-salle/{{ salle.id }}"
+                                >voir détails</a
+                              >
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="effect"></div>
+                      </div>
+                      <div class="dz-content">
+                        <h4 class="title">
+                          <a href="product-detail.html">{{ salle.nom }}</a>
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-4 col-lg-12">
+                <div class="shop-filter side-bar sticky-top">
+                  <aside>
+                    <div class="search-bx wow fadeInUp" data-wow-delay="0.2s">
+                      <form role="search" method="post">
+                        <div class="input-group">
+                          <div class="input-side">
+                            <input
+                              name="text"
+                              class="form-control"
+                              placeholder="recherche..."
+                              type="text"
+                              [(ngModel)]="searchTerm"
+                              (ngModelChange)="onSearch()"
+                            />
+                            <div class="input-group-btn">
+                              <button type="submit" class="btn">
+                                <i class="flaticon-magnifying-glass"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <app-footer></app-footer>
+
+      <!-- Footer -->
+    </div>
+  </body>
+</html>

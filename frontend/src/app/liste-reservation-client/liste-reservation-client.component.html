@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Mirrored from powerzone.dexignzone.com/xhtml/shop-wishlist.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 12 Mar 2024 10:24:07 GMT -->
+  <head>
+    <!-- Title -->
+    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
+
+    <!-- Meta -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="DexignZone" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="keywords"
+      content="bodybuilding, class, clean, entraineur, fitness, fitness gym, gym, gym trainer, health, martial arts, personal trainer, sport, sports theme, training, workout, Fitness template, Workout design, Health and wellness, Exercise layout, Fitness app, Gym website, UI components, UX components, Workout routines, Health template, UIUX, creative, HTML, CSS, Sass Integration, HTML Template, Bootstrap, Bootstrap Template, Gym UI Kit, websiite, Website template, Fitness Website Design, Exercise App Design, Gym Interface, Exercise Dashboard, Gym Homepage Template, HTML Gym Template, Responsive Gym Design, responsive, HTML Fitness Components, Workout Program Template, Fitness Studio HTML, Responsive Workout Design, Landing Page Kit, HTML5, HTML/CSS"
+    />
+    <meta
+      name="description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta
+      property="og:title"
+      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
+    />
+    <meta
+      property="og:description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta property="og:image" content="social-image.png" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      name="twitter:title"
+      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
+    />
+    <meta
+      name="twitter:description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta name="twitter:image" content="social-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Mobile Specific -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body id="bg" class="data-typography-1">
+    <div class="page-wraper">
+      <app-header></app-header>
+      <div class="page-content bg-white">
+        <div class="content-inner">
+          <div class="container mt-5">
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Mes Réservations</h4>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="loading" class="text-center my-5"></div>
+
+                    <div *ngIf="error" class="alert alert-danger">
+                      {{ error }}
+                    </div>
+
+                    <div
+                      *ngIf="
+                        !loading &&
+                        !error &&
+                        (!listeReseravtion || listeReseravtion.length === 0)
+                      "
+                      class="text-center my-5"
+                    ></div>
+
+                    <div
+                      *ngIf="
+                        !loading &&
+                        !error &&
+                        listeReseravtion &&
+                        listeReseravtion.length > 0
+                      "
+                    >
+                      <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                          <thead class="thead-dark">
+                            <tr>
+                              <th>Date</th>
+                              <th>Catégorie</th>
+                              <th>Horaire</th>
+                              <th>Coach</th>
+                              <th>Statut</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let reservation of listeReseravtion">
+                              <ng-container *ngIf="reservation?.plan">
+                                <td>
+                                  {{
+                                    reservation.plan.date | date : "dd/MM/yyyy"
+                                  }}
+                                </td>
+                                <td>
+                                  {{
+                                    reservation.plan.category?.nom ||
+                                      "Non spécifié"
+                                  }}
+                                </td>
+                                <td>
+                                  {{ reservation.plan.debut || "00:00" }} -
+                                  {{ reservation.plan.fin || "00:00" }}
+                                </td>
+                                <td>
+                                  {{ reservation.plan.coach?.nom }}
+                                  {{ reservation.plan.coach?.prenom }}
+                                </td>
+                                <td>
+                                  <span
+                                    [ngClass]="{
+                                      'text-dark':
+                                        isSessionCompleted(
+                                          reservation.plan.date,
+                                          reservation.plan.debut,
+                                          reservation.plan.fin
+                                        ) === 'Séance en attente',
+                                      'text-success':
+                                        isSessionCompleted(
+                                          reservation.plan.date,
+                                          reservation.plan.debut,
+                                          reservation.plan.fin
+                                        ) === 'Séance en cours',
+                                      'text-danger':
+                                        isSessionCompleted(
+                                          reservation.plan.date,
+                                          reservation.plan.debut,
+                                          reservation.plan.fin
+                                        ) === 'Séance terminée',
+                                      'text-secondary':
+                                        isSessionCompleted(
+                                          reservation.plan.date,
+                                          reservation.plan.debut,
+                                          reservation.plan.fin
+                                        ) === 'Statut inconnu'
+                                    }"
+                                  >
+                                    {{
+                                      isSessionCompleted(
+                                        reservation.plan.date,
+                                        reservation.plan.debut,
+                                        reservation.plan.fin
+                                      )
+                                    }}
+                                  </span>
+                                </td>
+                                <td>
+                                  <button
+                                    *ngIf="
+                                      reservation.plan.id &&
+                                      (isSessionCompleted(
+                                        reservation.plan.date,
+                                        reservation.plan.debut,
+                                        reservation.plan.fin
+                                      ) === 'Séance en cours' ||
+                                        isSessionCompleted(
+                                          reservation.plan.date,
+                                          reservation.plan.debut,
+                                          reservation.plan.fin
+                                        ) === 'Séance en attente')
+                                    "
+                                    type="button"
+                                    class="btn btn-sm"
+                                    [ngClass]="
+                                      isSessionCompleted(
+                                        reservation.plan.date,
+                                        reservation.plan.debut,
+                                        reservation.plan.fin
+                                      ) === 'Séance en cours'
+                                        ? 'btn-success'
+                                        : 'btn-primary'
+                                    "
+                                    [routerLink]="[
+                                      '/call',
+                                      reservation.plan.id
+                                    ]"
+                                  >
+                                    <i class="fa fa-video"></i> Rejoindre
+                                  </button>
+                                  <button
+                                    *ngIf="
+                                      reservation.plan.id &&
+                                      isSessionCompleted(
+                                        reservation.plan.date,
+                                        reservation.plan.debut,
+                                        reservation.plan.fin
+                                      ) === 'Séance terminée'
+                                    "
+                                    type="button"
+                                    class="btn btn-secondary btn-sm"
+                                    disabled
+                                  >
+                                    <i class="fa fa-ban"></i> Terminée
+                                  </button>
+                                </td>
+                              </ng-container>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <app-footer
+          style="position: absolute; bottom: 0; width: 100%"
+        ></app-footer>
+      </div>
+    </div>
+  </body>
+</html>

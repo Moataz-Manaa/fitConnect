@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Buttons</title>
+  </head>
+  <body>
+    <app-header> </app-header>
+
+    <main class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow">
+            <div class="card-body text-center">
+              <div class="btn btn-primary btn-lg w-100 mb-3">
+                <a href="/loginClient" style="color: white"
+                  >Connecter en tant que client</a
+                >
+              </div>
+              <button class="btn btn-success btn-lg w-100 mb-3">
+                <a href="/loginSalleDeSport" style="color: white"
+                  >Connecter en tant que coach</a
+                >
+              </button>
+              <button class="btn btn-warning btn-lg w-100">
+                <a href="/loginCoach" style="color: white"
+                  >Connecter en tant que responsable de salle de sport</a
+                >
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <app-footer style="position: absolute; bottom: 0; width: 100%">
+    </app-footer>
+  </body>
+</html>

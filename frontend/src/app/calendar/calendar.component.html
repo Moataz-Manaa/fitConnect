@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="DexignZone" />
+    <meta name="robots" content="index, follow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body id="bg" class="data-typography-1">
+    <div class="page-wraper">
+      <app-header></app-header>
+      <div class="page-content bg-white">
+        <div class="button-container">
+          <button
+            type="button"
+            class="btn btn-primary custom-position"
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModal"
+            data-bs-whatever="@getbootstrap"
+          >
+            Ajouter Planning
+          </button>
+        </div>
+
+        <div
+          class="modal fade"
+          id="exampleModal"
+          tabindex="-1"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                  Ajouter Planning
+                </h1>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <form
+                  (ngSubmit)="addNewPlanningC()"
+                  [formGroup]="PlanningCForm"
+                >
+                  <div class="mb-3">
+                    <label for="category" class="col-form-label"
+                      >Catégorie</label
+                    >
+                    <select
+                      class="form-control"
+                      id="category"
+                      formControlName="idCategory"
+                    >
+                      <option value="">Sélectionner une catégorie</option>
+                      <option
+                        *ngFor="let category of categories"
+                        [value]="category.id"
+                      >
+                        {{ category.nom }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="description" class="col-form-label"
+                      >Description</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="description"
+                      placeholder="Description"
+                      formControlName="description"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="date" class="col-form-label">Date</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="date"
+                      formControlName="date"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="debut" class="col-form-label"
+                      >Début de Séance</label
+                    >
+                    <input
+                      type="time"
+                      class="form-control"
+                      id="debut"
+                      formControlName="debut"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="fin" class="col-form-label"
+                      >Fin de Séance</label
+                    >
+                    <input
+                      type="time"
+                      class="form-control"
+                      id="fin"
+                      formControlName="fin"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="prix" class="col-form-label">Prix</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="prix"
+                      placeholder="Prix"
+                      formControlName="prix"
+                      step="0.01"
+                    />
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                    >
+                      Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                      Ajouter
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-inner">
+          <div class="container">
+            <div class="row text-center">
+              <div class="col-md-4">
+                <div class="btn-group">
+                  <button
+                    class="btn btn-primary"
+                    mwlCalendarPreviousView
+                    [view]="view"
+                    [(viewDate)]="viewDate"
+                    (viewDateChange)="closeOpenMonthViewDay()"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary"
+                    mwlCalendarToday
+                    [(viewDate)]="viewDate"
+                  >
+                    Today
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    mwlCalendarNextView
+                    [view]="view"
+                    [(viewDate)]="viewDate"
+                    (viewDateChange)="closeOpenMonthViewDay()"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <h3>
+                  {{ viewDate | calendarDate : view + "ViewTitle" : "en" }}
+                </h3>
+              </div>
+              <div class="col-md-4">
+                <div class="btn-group">
+                  <button
+                    class="btn btn-primary"
+                    (click)="setView(CalendarView.Month)"
+                    [class.active]="view === CalendarView.Month"
+                  >
+                    Month
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    (click)="setView(CalendarView.Week)"
+                    [class.active]="view === CalendarView.Week"
+                  >
+                    Week
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    (click)="setView(CalendarView.Day)"
+                    [class.active]="view === CalendarView.Day"
+                  >
+                    Day
+                  </button>
+                </div>
+              </div>
+            </div>
+            <br />
+            <div class="row text-center"></div>
+            <br />
+
+            <div [ngSwitch]="view">
+              <mwl-calendar-month-view
+                *ngSwitchCase="CalendarView.Month"
+                [viewDate]="viewDate"
+                [events]="events"
+                [refresh]="refresh"
+                [activeDayIsOpen]="activeDayIsOpen"
+                (dayClicked)="dayClicked($event.day)"
+                (eventClicked)="handleEvent('Clicked', $event.event)"
+                (eventTimesChanged)="eventTimesChanged($event)"
+              >
+              </mwl-calendar-month-view>
+
+              <mwl-calendar-week-view
+                *ngSwitchCase="CalendarView.Week"
+                [viewDate]="viewDate"
+                [events]="events"
+                [refresh]="refresh"
+                (eventClicked)="handleEvent('Clicked', $event.event)"
+                (eventTimesChanged)="eventTimesChanged($event)"
+              >
+              </mwl-calendar-week-view>
+
+              <mwl-calendar-day-view
+                *ngSwitchCase="CalendarView.Day"
+                [viewDate]="viewDate"
+                [events]="events"
+                [refresh]="refresh"
+                (eventClicked)="handleEvent('Clicked', $event.event)"
+                (eventTimesChanged)="eventTimesChanged($event)"
+              >
+              </mwl-calendar-day-view>
+            </div>
+          </div>
+        </div>
+      </div>
+      <app-footer></app-footer>
+    </div>
+  </body>
+</html>

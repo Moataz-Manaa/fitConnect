@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modifier vos informations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .form-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        transition: transform 02s ease, box-shadow 0.3s ease;
+      }
+      .form-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      }
+      .form-group label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .form-control {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      .form-control:focus {
+        outline: none;
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+      }
+      .is-invalid {
+        border-color: #e53e3e;
+      }
+      .invalid-feedback {
+        color: #e53e3e;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #3182ce, #2b6cb0);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #2b6cb0, #2c5282);
+        transform: translateY(-2px);
+      }
+      .btn-primary:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+      }
+      .alert {
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      .alert-success {
+        background-color: #f0fff4;
+        color: #276749;
+      }
+      .alert-danger {
+        background-color: #fff5f5;
+        color: #9b2c2c;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <app-header></app-header>
+    <div
+      class="page-content bg-gray-100 min-h-screen flex items-center justify-center py-8"
+    >
+      <div class="content-inner-1 w-full max-w-3xl">
+        <div class="container mx-auto px-4">
+          <div class="shop-checkout form-container">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+              Modifier vos informations
+            </h1>
+            <form
+              [formGroup]="profileForm"
+              (ngSubmit)="onSubmit()"
+              class="space-y-6"
+            >
+              <!-- Client Fields -->
+              <ng-container *ngIf="userType === 'client'">
+                <div class="form-group">
+                  <label class="label-title">Nom</label>
+                  <input
+                    formControlName="nom"
+                    class="form-control w-full"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('nom')?.touched &&
+                        profileForm.get('nom')?.invalid
+                    }"
+                  />
+                  <div
+                    *ngIf="
+                      profileForm.get('nom')?.touched &&
+                      profileForm.get('nom')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    nom est obligatoire
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="label-title">Prénom</label>
+                  <input
+                    formControlName="prenom"
+                    class="form-control w-full"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('prenom')?.touched &&
+                        profileForm.get('prenom')?.invalid
+                    }"
+                  />
+                  <div
+                    *ngIf="
+                      profileForm.get('prenom')?.touched &&
+                      profileForm.get('prenom')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    nom est obligatoire
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="label-title">Age</label>
+                  <input
+                    type="number"
+                    formControlName="age"
+                    class="form-control w-full"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('age')?.touched &&
+                        profileForm.get('age')?.invalid
+                    }"
+                  />
+                  <div
+                    *ngIf="
+                      profileForm.get('age')?.touched &&
+                      profileForm.get('age')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    Veuillez saisir un âge valide
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Coach Fields -->
+              <ng-container *ngIf="userType === 'coach'">
+                <div class="form-group">
+                  <label class="label-title">Nom</label>
+                  <input
+                    formControlName="nom"
+                    class="form-control w-full"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('nom')?.touched &&
+                        profileForm.get('nom')?.invalid
+                    }"
+                  />
+                  <div
+                    *ngIf="
+                      profileForm.get('nom')?.touched &&
+                      profileForm.get('nom')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    Nom est obligatoire
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="label-title">Prénom</label>
+                  <input
+                    formControlName="prenom"
+                    class="form-control w-full"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('prenom')?.touched &&
+                        profileForm.get('prenom')?.invalid
+                    }"
+                  />
+                  <div
+                    *ngIf="
+                      profileForm.get('prenom')?.touched &&
+                      profileForm.get('prenom')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    nom est obligatoire
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- SalleDeSport Fields -->
+              <ng-container *ngIf="userType === 'salle'">
+                <div class="form-group">
+                  <label class="label-title">Nom de salle de sport</label>
+                  <input
+                    formControlName="nom"
+                    class="form-control w-full"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('nom')?.touched &&
+                        profileForm.get('nom')?.invalid
+                    }"
+                  />
+                  <div
+                    *ngIf="
+                      profileForm.get('nom')?.touched &&
+                      profileForm.get('nom')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    le nom de salle de sport est obligatoire
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="label-title">Adresse</label>
+                  <textarea
+                    formControlName="adresse"
+                    class="form-control w-full"
+                    rows="5"
+                    [ngClass]="{
+                      'is-invalid':
+                        profileForm.get('adresse')?.touched &&
+                        profileForm.get('adresse')?.invalid
+                    }"
+                  ></textarea>
+                  <div
+                    *ngIf="
+                      profileForm.get('adresse')?.touched &&
+                      profileForm.get('adresse')?.invalid
+                    "
+                    class="invalid-feedback"
+                  >
+                    L'adresse est obligatoire
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Common Fields for all user types -->
+              <div class="form-group">
+                <label class="label-title">Téléphone</label>
+                <input
+                  formControlName="telephone"
+                  class="form-control w-full"
+                  [ngClass]="{
+                    'is-invalid':
+                      profileForm.get('telephone')?.touched &&
+                      profileForm.get('telephone')?.invalid
+                  }"
+                />
+                <div
+                  *ngIf="
+                    profileForm.get('telephone')?.touched &&
+                    profileForm.get('telephone')?.invalid
+                  "
+                  class="invalid-feedback"
+                >
+                  Le numéro de téléphone est obligatoire
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="label-title">Email</label>
+                <input
+                  formControlName="email"
+                  class="form-control w-full"
+                  [ngClass]="{
+                    'is-invalid':
+                      profileForm.get('email')?.touched &&
+                      profileForm.get('email')?.invalid
+                  }"
+                  readonly
+                />
+                <small class="text-gray-500 text-sm"
+                  >Email ne peut pas être modifié</small
+                >
+              </div>
+
+              <!-- Password Fields -->
+              <div class="form-group">
+                <label class="label-title">Mot de passe actuel</label>
+                <input
+                  type="password"
+                  formControlName="currentPassword"
+                  class="form-control w-full"
+                  placeholder="Entrez le mot de passe actuel"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="label-title">Nouveau mot de passe</label>
+                <input
+                  type="password"
+                  formControlName="mp"
+                  class="form-control w-full"
+                  placeholder="Entrez le nouveau mot de passe"
+                />
+              </div>
+
+              <!-- Success/Error Messages -->
+              <div *ngIf="successMessage" class="alert alert-success">
+                {{ successMessage }}
+              </div>
+
+              <div *ngIf="errorMessage" class="alert alert-danger">
+                {{ errorMessage }}
+              </div>
+
+              <!-- Submit Button -->
+              <div class="mt-6">
+                <button
+                  type="submit"
+                  class="btn btn-primary w-full"
+                  [disabled]="profileForm.invalid"
+                >
+                  Enregistrer les modifications
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <app-footer></app-footer>
+  </body>
+</html>

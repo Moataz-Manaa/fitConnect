@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Mirrored from powerzone.dexignzone.com/xhtml/shop-cart.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:45 GMT -->
+  <head>
+    <!-- Title -->
+    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
+
+    <!-- Meta -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="DexignZone" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="keywords"
+      content="bodybuilding, class, clean, coach, fitness, fitness gym, gym, gym trainer, health, martial arts, personal trainer, sport, sports theme, training, workout, Fitness template, Workout design, Health and wellness, Exercise layout, Fitness app, Gym website, UI components, UX components, Workout routines, Health template, UIUX, creative, HTML, CSS, Sass Integration, HTML Template, Bootstrap, Bootstrap Template, Gym UI Kit, websiite, Website template, Fitness Website Design, Exercise App Design, Gym Interface, Exercise Dashboard, Gym Homepage Template, HTML Gym Template, Responsive Gym Design, responsive, HTML Fitness Components, Workout Program Template, Fitness Studio HTML, Responsive Workout Design, Landing Page Kit, HTML5, HTML/CSS"
+    />
+    <meta
+      name="description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta
+      property="og:title"
+      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
+    />
+    <meta
+      property="og:description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta property="og:image" content="social-image.png" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      name="twitter:title"
+      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
+    />
+    <meta
+      name="twitter:description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta name="twitter:image" content="social-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Mobile Specific -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body id="bg" class="data-typography-1">
+    <div class="page-wraper">
+      <!-- Header -->
+      <app-header></app-header>
+      <!-- Header -->
+
+      <div class="page-content bg-white" style="height: 100vh">
+        <!-- Our Shop Cart-->
+        <section>
+          <div class="container">
+            <h1 style="margin-top: 25px; margin-bottom: 25px">
+              Mes clients (coachs)
+            </h1>
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="table-responsive">
+                  <table
+                    class="table check-tbl wow fadeInUp"
+                    data-wow-delay="0.4s"
+                  >
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Age</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let client of clients">
+                        <td class="product-item-name">
+                          {{ client.nom }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ client.prenom }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ client.email }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ client.telephone }}
+                        </td>
+                        <td class="product-item-name">
+                          {{ client.age }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Our Shop Cart-->
+      </div>
+
+      <!-- Footer -->
+      <app-footer></app-footer>
+      <!-- Footer End -->
+    </div>
+  </body>
+</html>

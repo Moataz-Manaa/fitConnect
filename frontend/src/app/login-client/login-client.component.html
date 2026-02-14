@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Mirrored from powerzone.dexignzone.com/xhtml/shop-login.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:48 GMT -->
+  <head>
+    <!-- Title -->
+    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
+
+    <!-- Meta -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="DexignZone" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="keywords"
+      content="bodybuilding, class, clean, coach, fitness, fitness gym, gym, gym trainer, health, martial arts, personal trainer, sport, sports theme, training, workout, Fitness template, Workout design, Health and wellness, Exercise layout, Fitness app, Gym website, UI components, UX components, Workout routines, Health template, UIUX, creative, HTML, CSS, Sass Integration, HTML Template, Bootstrap, Bootstrap Template, Gym UI Kit, websiite, Website template, Fitness Website Design, Exercise App Design, Gym Interface, Exercise Dashboard, Gym Homepage Template, HTML Gym Template, Responsive Gym Design, responsive, HTML Fitness Components, Workout Program Template, Fitness Studio HTML, Responsive Workout Design, Landing Page Kit, HTML5, HTML/CSS"
+    />
+    <meta
+      name="description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta
+      property="og:title"
+      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
+    />
+    <meta
+      property="og:description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta property="og:image" content="social-image.png" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      name="twitter:title"
+      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
+    />
+    <meta
+      name="twitter:description"
+      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
+    />
+    <meta name="twitter:image" content="social-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body id="bg" class="data-typography-1">
+    <div class="page-wraper">
+      <!-- Header -->
+      <app-header></app-header>
+
+      <!-- Page Content -->
+      <div class="page-content bg-white flex-grow-1">
+        <section class="p-0 mt-3 mb-3">
+          <div class="row justify-content-center align-items-center">
+            <div
+              class="col-xxl-6 col-xl-6 col-lg-6 col-md-12 d-flex justify-content-center"
+            >
+              <div class="login-area wow fadeInUp" data-wow-delay="0.4s">
+                <h2 class="title">Content de te revoir</h2>
+                <p class="text-white text-center m-b25">
+                  Bienvenue, veuillez vous connecter à votre compte
+                </p>
+                <div class="tab-content nav">
+                  <!-- Login Form -->
+                  <form
+                    id="login"
+                    class="tab-pane"
+                    [class.active]="activeTab === 'login'"
+                    (ngSubmit)="login()"
+                    [formGroup]="loginForm"
+                  >
+                    <!-- Existing form fields -->
+                    <div class="m-b30">
+                      <label class="label-title">Email</label>
+                      <input
+                        formControlName="email"
+                        class="form-control"
+                        placeholder="Email Address"
+                        type="email"
+                        required
+                      />
+                    </div>
+                    <div class="m-b10">
+                      <label class="label-title">Mot de passe</label>
+                      <div class="secure-input">
+                        <input
+                          formControlName="mp"
+                          [type]="passwordVisible ? 'text' : 'password'"
+                          class="form-control dz-password"
+                          placeholder="Password"
+                          required
+                        />
+                        <div class="show-pass">
+                          <i
+                            class="eye-open fa-regular"
+                            [class.fa-eye]="!passwordVisible"
+                            [class.fa-eye-slash]="passwordVisible"
+                            (click)="togglePasswordVisibility()"
+                          ></i>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="text-left d-flex align-items justify-content-between m-b30"
+                    >
+                      <a
+                        href="javascript:void(0)"
+                        (click)="switchTab('forgot-password')"
+                        class="m-l5"
+                        >Mot de passe oublié</a
+                      >
+                    </div>
+                    <span [innerHTML]="messageCommande"></span>
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-primary m-b15 w-100">
+                        Se connecter
+                      </button>
+                      <a href="/registerClient" class="btn-link"
+                        >Vous n'avez pas de compte ? <span>S'inscrire</span></a
+                      >
+                    </div>
+                  </form>
+                  <div class="container">
+                    <div id="g_id_signin"></div>
+                  </div>
+                  <!-- Forgot Password Form -->
+                  <form
+                    id="forgot-password"
+                    class="tab-pane text-center"
+                    [class.active]="activeTab === 'forgot-password'"
+                    (ngSubmit)="forgotPassword()"
+                    [formGroup]="forgotPasswordForm"
+                  >
+                    <h4 class="m-b5 text-white">Mot de passe oublié ?</h4>
+                    <small class="font-weight-600 m-b20 d-block text-white">
+                      Nous vous enverrons un email pour réinitialiser votre mot
+                      de passe.
+                    </small>
+                    <div class="mb-3">
+                      <label class="label-title">E-MAIL *</label>
+                      <input
+                        formControlName="email"
+                        class="form-control"
+                        placeholder="Your Email Id"
+                        type="email"
+                        required
+                      />
+                    </div>
+                    <div class="text-center">
+                      <a
+                        href="javascript:void(0)"
+                        (click)="switchTab('login')"
+                        class="btn btn-light m-r10 rounded-0"
+                        >Retour</a
+                      >
+                      <button type="submit" class="btn btn-primary rounded-0">
+                        Envoyer
+                      </button>
+                    </div>
+                    <div class="mt-3">
+                      <span [innerHTML]="forgotPasswordMessage"></span>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <app-footer></app-footer>
+    </div>
+  </body>
+
+  <!-- Mirrored from powerzone.dexignzone.com/xhtml/shop-login.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:48 GMT -->
+</html>

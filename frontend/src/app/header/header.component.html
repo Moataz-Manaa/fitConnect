@@ -1,0 +1,135 @@
+<header class="site-header mo-left header style-1">
+  <!-- Main Header -->
+  <div class="sticky-header main-bar-wraper navbar-expand-lg border-bottom">
+    <div class="main-bar clearfix">
+      <div class="container clearfix">
+        <div class="clearfix">
+          <!-- Website Logo -->
+          <div class="logo-header mostion logo-dark">
+            <a href="index.html"
+              ><img src="assets/images/logo66.png" alt=""
+            /></a>
+          </div>
+
+          <!-- Nav Toggle Button -->
+          <button
+            class="navbar-toggler navbar-toggler-skew collapsed navicon justify-content-end"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <!-- Extra Nav -->
+          <div class="extra-nav">
+            <div class="extra-cell">
+              <a
+                href="/contact"
+                class="btn btn-primary btn-skew appointment-btn"
+                ><span class="skew-inner"
+                  ><span class="text">Contact</span></span
+                ></a
+              >
+            </div>
+          </div>
+          <!-- Extra Nav -->
+
+          <!-- Search Form -->
+          <div class="dz-quik-search">
+            <form action="#">
+              <input
+                name="search"
+                value=""
+                type="text"
+                class="form-control"
+                placeholder="Enter Your Keyword ..."
+              />
+              <span id="quik-search-remove"
+                ><i class="fa-solid fa-xmark"></i
+              ></span>
+            </form>
+          </div>
+
+          <!-- Header Nav -->
+          <div
+            class="header-nav navbar-collapse collapse justify-content-end"
+            id="navbarNavDropdown"
+          >
+            <div class="logo-header logo-dark">
+              <a href="index.html"
+                ><img src="assets/images/logo.png" alt=""
+              /></a>
+            </div>
+            <ul class="nav navbar-nav navbar navbar-left">
+              <li>
+                <a href="/">Accueil</a>
+              </li>
+              <li>
+                <a href="/about">Qui Sommes nous</a>
+              </li>
+              <li class="sub-menu-down" *ngIf="IsClientIn">
+                <a>Services</a>
+                <ul class="sub-menu">
+                  <li *ngIf="IsClientIn">
+                    <a href="/liste-salle">Salle de sport</a>
+                  </li>
+                  <li *ngIf="IsClientIn">
+                    <a href="/coach">Coach</a>
+                  </li>
+                  <li *ngIf="IsClientIn">
+                    <a href="/listeAbonnementClient">Abonnements</a>
+                  </li>
+                  <li *ngIf="IsClientIn">
+                    <a href="/listeReservationClient">Réservations</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="sub-menu-down" *ngIf="IsSalleIn">
+                <a>Services</a>
+                <ul class="sub-menu">
+                  <li><a href="/ajouterPack">Ajouter pack</a></li>
+                  <li><a href="/mesPacks">Mes packs</a></li>
+                  <li><a href="/ajouter-coach">Ajouter coach</a></li>
+                  <li><a href="/mes-coach">Mes coachs</a></li>
+                  <li><a href="/mes-clients">Mes clients</a></li>
+                  <li><a href="/revenue">Revenu</a></li>
+                </ul>
+              </li>
+              <li class="sub-menu-down" *ngIf="IsCoachIn">
+                <a>Services</a>
+                <ul class="sub-menu">
+                  <li><a href="/calendar">Calendrier</a></li>
+                  <li><a href="/listeReservationCoach">Mes séances</a></li>
+                </ul>
+              </li>
+              <li *ngIf="IsCoachIn || IsSalleIn || IsClientIn">
+                <a href="/edit-profile">Profile</a>
+              </li>
+              <li
+                class="sub-menu-down"
+                *ngIf="!IsCoachIn && !IsSalleIn && !IsClientIn"
+              >
+                <a>Connexion</a>
+                <ul class="sub-menu">
+                  <li><a href="/loginClient">Client</a></li>
+                  <li><a href="/loginSalleDeSport">Salle de sport</a></li>
+                  <li><a href="/loginCoach">Coach privé</a></li>
+                </ul>
+              </li>
+              <li *ngIf="IsCoachIn || IsSalleIn || IsClientIn">
+                <a href="#" (click)="logout()">Déconnexion</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Main Header End -->
+</header>
