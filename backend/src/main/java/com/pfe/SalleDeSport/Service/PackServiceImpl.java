@@ -2,11 +2,19 @@ package com.pfe.SalleDeSport.Service;
 
 import com.pfe.SalleDeSport.Dto.SavePack;
 import com.pfe.SalleDeSport.Entity.*;
+import com.pfe.SalleDeSport.Entity.CheckoutPurchase.Kind;
+import com.pfe.SalleDeSport.Entity.CheckoutPurchase.State;
+import com.pfe.SalleDeSport.Repository.CheckoutPurchaseRepository;
 import com.pfe.SalleDeSport.Repository.CategoryRepository;
 import com.pfe.SalleDeSport.Repository.PackRepository;
 import com.pfe.SalleDeSport.Repository.SalleDeSportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +26,8 @@ public class PackServiceImpl implements PackService{
     PackRepository packRepository;
     @Autowired
     CategoryRepository categoryRepository;
+    @Autowired
+    CheckoutPurchaseRepository purchases;
     @Autowired
     SalleDeSportRepository salleDeSportRepository;
 
@@ -43,8 +53,13 @@ public class PackServiceImpl implements PackService{
     }
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void supprimerPack(Long id) {
-        packRepository.deleteById(id);
+        var pack = packRepository.findByIdForUpdate(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (purchases.existsByKindInAndProductIdAndState(List.of(Kind.PACK, Kind.RENEWAL), id, State.OPEN)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A checkout is still open for this pack");
+        }
+        packRepository.delete(pack);
     }
 
     @Override

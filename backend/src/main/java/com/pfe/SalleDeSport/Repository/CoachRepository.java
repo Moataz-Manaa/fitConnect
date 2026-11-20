@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CoachRepository extends JpaRepository<Coach, Long> {
     boolean existsByEmail(String email);
     Coach findByEmail(String email);
+    long countByEtat(boolean etat);
 
 }

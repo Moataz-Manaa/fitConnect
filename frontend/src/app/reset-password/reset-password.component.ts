@@ -1,49 +1,43 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs';
 import { CrudService } from '../service/crud.service';
 
-@Component({
-  selector: 'app-reset-password',
-  templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.css'],
-})
+@Component({ selector: 'app-reset-password', templateUrl: './reset-password.component.html' })
 export class ResetPasswordComponent implements OnInit {
-  newPassword: string = '';
-  token: string = '';
-  message: string = '';
-  errorMessage: string = '';
+  private readonly destroyRef = inject(DestroyRef);
+  newPassword = '';
+  token = '';
+  complete = false;
+  busy = false;
+  error = '';
 
-  constructor(
-    private crudService: CrudService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  constructor(private service: CrudService, private route: ActivatedRoute) {}
 
-  ngOnInit() {
-    this.token = this.route.snapshot.queryParamMap.get('token') || '';
-    if (!this.token) {
-      this.errorMessage = 'Invalid or missing reset token';
-    }
+  ngOnInit(): void {
+    this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
+    if (!this.token) this.error = 'Le lien de réinitialisation est incomplet. Demandez un nouveau lien depuis la page de connexion.';
   }
 
-  onResetPassword() {
-    if (!this.newPassword || !this.token) {
-      this.errorMessage =
-        'Please enter a new password and ensure the token is valid';
+  onResetPassword(): void {
+    if (!this.token || this.busy || this.complete) return;
+    if (!this.newPassword.trim()) {
+      this.error = 'Saisissez votre nouveau mot de passe.';
       return;
     }
-
-    this.crudService.resetPassword(this.token, this.newPassword).subscribe({
-      next: (response: string) => {
-        this.message = response; // e.g., "Le mot de passe a été réinitialisé avec succès"
-        this.errorMessage = '';
-        this.newPassword = ''; // Clear the input field
-        setTimeout(() => this.router.navigate(['/loginClient']), 2000); // Redirect after 2 seconds
+    this.error = '';
+    this.busy = true;
+    this.service.resetPassword(this.token, this.newPassword).pipe(
+      takeUntilDestroyed(this.destroyRef), finalize(() => this.busy = false)
+    ).subscribe({
+      next: () => {
+        this.complete = true;
+        this.newPassword = '';
       },
-      error: (error) => {
-        this.errorMessage = error.error || 'Failed to reset password';
-        this.message = '';
-      },
+      error: error => this.error = error.status === 400
+        ? 'Ce lien est invalide ou a expiré. Demandez un nouveau lien depuis la page de connexion.'
+        : 'Impossible de réinitialiser votre mot de passe. Veuillez réessayer.',
     });
   }
 }

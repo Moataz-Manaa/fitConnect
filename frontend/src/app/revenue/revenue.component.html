@@ -1,88 +1,50 @@
-<!-- revenue.component.html -->
 <app-header></app-header>
-<div class="container mt-4 mb-4">
-  <h2 class="mb-4">Tableau de bord des revenus pour la salle de sport</h2>
-
-  <!-- Year Selection -->
-  <div class="mb-4">
-    <label for="year" class="form-label">Sélectionnez l'année :</label>
-    <select
-      id="year"
-      [(ngModel)]="selectedYear"
-      (ngModelChange)="onYearChange()"
-      class="form-select"
-    >
-      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-    </select>
+<main class="fc-page fc-wrap fc-section">
+  <header class="fc-page-heading"><h1>Mes revenus</h1><p>Consultez les revenus d’abonnement de votre salle.</p></header>
+  <app-workspace-nav role="salle"></app-workspace-nav>
+  <div class="fc-filter">
+    <label class="fc-field">Année
+      <select [ngModel]="selectedYear" (ngModelChange)="loadYear($event)">
+        <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
+      </select>
+    </label>
   </div>
-
-  <!-- Grid Layout for Charts -->
-  <div class="row g-4">
-    <!-- Total Revenue Card -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100">
-        <div class="card-body text-center">
-          <h3 class="card-title">Chiffre d'affaires annuel total</h3>
-          <p class="card-text fs-3 text-primary">
-            {{ totalRevenue | number : "1.2-2" }} D
-          </p>
-        </div>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement des revenus…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="loadYear()"></app-page-state>
+    <ng-container *ngIf="data.value as report">
+      <section class="fc-card fc-card-body fc-workspace-feedback">
+        <h2>Revenus en {{ selectedYear }}</h2>
+        <p class="fc-revenue-total">{{ report.total | number : '1.2-2' : 'fr' }}</p>
+      </section>
+      <app-page-state *ngIf="!report.total && !report.packs.length" [message]="'Aucun revenu enregistré pour ' + selectedYear + '.'"></app-page-state>
+      <div class="fc-workspace-chart-grid">
+        <section class="fc-card fc-card-body">
+          <h2>Revenus par mois</h2>
+          <div class="fc-workspace-chart"><canvas baseChart type="bar" [data]="report.monthlyChart" [options]="trendOptions" role="img" aria-label="Graphique des revenus mensuels"></canvas></div>
+          <details>
+            <summary>Montants par mois</summary>
+            <dl class="fc-facts"><ng-container *ngFor="let item of report.monthly"><dt>{{ item.label }}</dt><dd>{{ item.amount | number : '1.2-2' : 'fr' }}</dd></ng-container></dl>
+          </details>
+        </section>
+        <section class="fc-card fc-card-body">
+          <h2>Revenus par année</h2>
+          <div class="fc-workspace-chart"><canvas baseChart type="line" [data]="report.annualChart" [options]="trendOptions" role="img" aria-label="Graphique des revenus annuels"></canvas></div>
+          <details>
+            <summary>Montants par année</summary>
+            <dl class="fc-facts"><ng-container *ngFor="let item of report.annual"><dt>{{ item.year }}</dt><dd>{{ item.amount | number : '1.2-2' : 'fr' }}</dd></ng-container></dl>
+          </details>
+        </section>
+        <section class="fc-card fc-card-body" *ngIf="report.packs.length">
+          <h2>Revenus par pack</h2>
+          <div class="fc-workspace-chart"><canvas baseChart type="pie" [data]="report.packChart" [options]="packOptions" role="img" aria-label="Répartition des revenus par pack"></canvas></div>
+          <details>
+            <summary>Montants par pack</summary>
+            <dl class="fc-facts"><ng-container *ngFor="let item of report.packs"><dt>{{ item.packName }}</dt><dd>{{ item.revenue | number : '1.2-2' : 'fr' }}</dd></ng-container></dl>
+          </details>
+        </section>
       </div>
-    </div>
-
-    <!-- Bar Chart (Monthly Revenue) -->
-    <div class="col-md-6 col-lg-9">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">Chiffre d'affaires mensuel</h3>
-          <div class="chart-container">
-            <canvas
-              baseChart
-              #barChart
-              [data]="barChartData"
-              [options]="barChartOptions"
-              [type]="barChartType"
-            ></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pie Chart (Revenue by Pack) -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">Répartition des revenus par pack</h3>
-          <div class="chart-container">
-            <canvas
-              baseChart
-              #pieChart
-              [data]="pieChartData"
-              [options]="pieChartOptions"
-              [type]="pieChartType"
-            ></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Line Chart (Year-over-Year Revenue) -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">Tendance des revenus annuels</h3>
-          <div class="chart-container">
-            <canvas
-              baseChart
-              #lineChart
-              [data]="lineChartData"
-              [options]="lineChartOptions"
-              [type]="lineChartType"
-            ></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </ng-container>
+  </ng-container>
+</main>
 <app-footer></app-footer>

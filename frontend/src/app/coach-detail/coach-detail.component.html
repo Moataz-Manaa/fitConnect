@@ -1,122 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-  <!-- Mirrored from powerzone.dexignzone.com/xhtml/product-detail.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:49 GMT -->
-  <head>
-    <!-- Title -->
-    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
-
-    <!-- Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="author" content="DexignZone" />
-    <meta name="robots" content="index, follow" />
-    <meta
-      name="keywords"
-      content="bodybuilding, class, clean, coach, fitness, fitness gym, gym, gym trainer, health, martial arts, personal trainer, sport, sports theme, training, workout, Fitness template, Workout design, Health and wellness, Exercise layout, Fitness app, Gym website, UI components, UX components, Workout routines, Health template, UIUX, creative, HTML, CSS, Sass Integration, HTML Template, Bootstrap, Bootstrap Template, Gym UI Kit, websiite, Website template, Fitness Website Design, Exercise App Design, Gym Interface, Exercise Dashboard, Gym Homepage Template, HTML Gym Template, Responsive Gym Design, responsive, HTML Fitness Components, Workout Program Template, Fitness Studio HTML, Responsive Workout Design, Landing Page Kit, HTML5, HTML/CSS"
-    />
-    <meta
-      name="description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta
-      property="og:title"
-      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
-    />
-    <meta
-      property="og:description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta property="og:image" content="social-image.png" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta
-      name="twitter:title"
-      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
-    />
-    <meta
-      name="twitter:description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta name="twitter:image" content="social-image.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-
-    <!-- Mobile Specific -->
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body id="bg" class="data-typography-1">
-    <div class="page-wraper">
-      <!-- Header -->
-      <app-header></app-header>
-      <!-- Header -->
-
-      <div class="page-content bg-white">
-        <!-- Our Product Detail -->
-        <section class="content-inner pb-0">
-          <div class="container">
-            <div class="row">
-              <div class="col-lg-6 col-md-6">
-                <div class="dz-product-detail sticky-top side-bar left">
-                  <div class="swiper product-gallery-swiper2" id="lightgallery">
-                    <div class="swiper-wrapper">
-                      <div class="swiper-slide">
-                        <div
-                          class="dz-media DZoomImage wow fadeInUp"
-                          data-wow-delay="0.4s"
-                        >
-                          <img src="{{ this.coach.image }}" alt="image" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-6 col-md-6">
-                <div class="dz-product-detail style-1">
-                  <div class="dz-content">
-                    <div class="dz-content-footer">
-                      <div class="dz-content-start">
-                        <h4
-                          class="title m-b5 wow fadeInUp"
-                          data-wow-delay="1.3s"
-                        >
-                          {{ this.coach.nom }} {{ this.coach.prenom }}
-                        </h4>
-                      </div>
-                    </div>
-                    <p class="para-text wow fadeInUp" data-wow-delay="1.5s">
-                      <strong> Téléphone : </strong>
-                      {{ this.coach.telephone }}
-                    </p>
-
-                    <div class="cart-btn wow fadeInUp" data-wow-delay="1.7s">
-                      <a
-                        class="btn btn-secondary text-uppercase btn-lg"
-                        (click)="reserver(coach)"
-                        >Réserver</a
-                      >
-                    </div>
-                    <div class="dz-info wow fadeInUp" data-wow-delay="1.7s">
-                      <ul>
-                        <li>
-                          <strong>Email:</strong>
-                          <span>{{ this.coach.email }}</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section">
+  <a class="fc-text-link fc-back" routerLink="/coach">← Tous les coachs</a>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement du profil…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="load()"></app-page-state>
+    <app-page-state *ngIf="!data.loading && !data.error && !data.value" message="Ce coach est indisponible."></app-page-state>
+    <ng-container *ngIf="data.value as coach">
+      <header class="fc-page-heading"><h1>{{ coach.prenom }} {{ coach.nom }}</h1></header>
+      <div class="fc-detail-grid">
+        <img *ngIf="coach.image; else placeholder" class="fc-detail-image" [src]="coach.image" alt="" />
+        <ng-template #placeholder><div class="fc-card fc-card-placeholder" aria-hidden="true">{{ coach.prenom?.charAt(0) }}{{ coach.nom?.charAt(0) }}</div></ng-template>
+        <section class="fc-card fc-card-body">
+          <h2>Séances</h2>
+          <p class="fc-muted">Consultez les activités et les horaires proposés par ce coach.</p>
+          <a class="fc-button fc-button-primary" [routerLink]="['/seance', coach.id]">Voir ses séances</a>
         </section>
-
-        <!-- Our Product Detail -->
       </div>
-
-      <!-- Footer -->
-      <app-footer></app-footer>
-      <!-- Footer End -->
-    </div>
-  </body>
-
-  <!-- Mirrored from powerzone.dexignzone.com/xhtml/product-detail.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:52 GMT -->
-</html>
+    </ng-container>
+  </ng-container>
+</main>
+<app-footer></app-footer>

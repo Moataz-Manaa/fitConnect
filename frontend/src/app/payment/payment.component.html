@@ -1,22 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Payment Button Interface</title>
-  </head>
-  <body>
-    <div class="container">
-      <button class="payment-button" (click)="makePayment()">
-        Payer maintenant
-      </button>
-      <button
-        *ngIf="invoiceGenerated"
-        class="payment-button"
-        (click)="connexion()"
-      >
-        facture
-      </button>
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section fc-form-page" aria-labelledby="payment-title">
+  <section class="fc-card fc-card-body" [attr.aria-busy]="busy">
+    <h1 id="payment-title">Paiement</h1>
+    <app-page-state *ngIf="busy" kind="loading" message="Vérification en cours…"></app-page-state>
+    <app-page-state *ngIf="error" kind="error" [message]="error"></app-page-state>
+    <div *ngIf="needsLogin">
+      <a class="fc-button" routerLink="/loginClient" [queryParams]="{ checkout: id, returned: returnedFromStripe ? true : null, cancelled: cancelledInStripe ? true : null }">Se connecter</a>
     </div>
-  </body>
-</html>
+    <button *ngIf="id && error && !needsLogin" class="fc-button fc-button-outline" type="button"
+      [disabled]="busy" (click)="verify()">Réessayer</button>
+
+    <ng-container *ngIf="(needsLogin ? undefined : checkout) as order">
+      <h2>{{ order.description }}</h2>
+      <dl class="fc-facts">
+        <dt>Montant</dt>
+        <dd>{{ order.amount | currency : order.currency.toUpperCase() : 'code' : '1.2-2' : 'fr' }}</dd>
+        <dt *ngIf="order.activationDate">
+          {{ order.state === 'COMPLETED' ? 'Date d’activation' : 'Date demandée' }}
+        </dt>
+        <dd *ngIf="order.activationDate">{{ order.activationDate | date : 'dd/MM/yyyy' }}</dd>
+        <dt>Référence</dt>
+        <dd>{{ order.id }}</dd>
+      </dl>
+
+      <ng-container [ngSwitch]="order.state">
+        <div class="fc-payment-state fc-list" *ngSwitchCase="'OPEN'">
+          <p *ngIf="returnedFromStripe" class="fc-form-note" role="status">
+            Le paiement est en cours de vérification. Actualisez son état avant de poursuivre.
+          </p>
+          <p *ngIf="cancelledInStripe" class="fc-form-note" role="status">
+            Vous êtes de retour de Stripe. Vous pouvez reprendre ou annuler ce paiement.
+          </p>
+          <p *ngIf="order.kind === 'RENEWAL'">Le renouvellement commencera à la fin de votre dernière période ou dès le paiement si elle a expiré.</p>
+          <div class="fc-actions">
+            <a *ngIf="order.checkoutUrl && !returnedFromStripe && !busy && !error" class="fc-button"
+              [href]="order.checkoutUrl">Payer sur Stripe</a>
+            <button *ngIf="returnedFromStripe && !error" class="fc-button" type="button" [disabled]="busy"
+              (click)="verify()">Actualiser l’état</button>
+            <button class="fc-button fc-button-outline" type="button" [disabled]="busy || needsLogin"
+              (click)="cancel()">Annuler le paiement</button>
+          </div>
+        </div>
+        <div class="fc-payment-state fc-list" *ngSwitchCase="'COMPLETED'">
+          <p class="fc-form-note" role="status">
+            {{ order.kind === 'SESSION' ? 'Paiement confirmé. Votre séance est réservée.' : 'Paiement confirmé. Votre abonnement est enregistré.' }}
+          </p>
+          <a class="fc-button" [routerLink]="historyRoute">
+            {{ order.kind === 'SESSION' ? 'Mes réservations' : 'Mes abonnements' }}
+          </a>
+        </div>
+        <div class="fc-payment-state fc-list" *ngSwitchCase="'EXPIRED'">
+          <p class="fc-form-note" role="status">Ce paiement a expiré ou a été annulé.</p>
+          <a class="fc-button fc-button-outline" [routerLink]="catalogRoute">Revenir aux offres</a>
+        </div>
+      </ng-container>
+    </ng-container>
+  </section>
+</main>
+<app-footer></app-footer>

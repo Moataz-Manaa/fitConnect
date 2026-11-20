@@ -1,51 +1,38 @@
-import { Component } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { CrudService } from '../service/crud.service';
-import { Pack } from '../Entity/Pack.Entity';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 import { CoachSalle } from '../Entity/CoachSalle.Entity';
+import { Pack } from '../Entity/Pack.Entity';
+import { SalleDeSport } from '../Entity/SalleDeSport.Entity';
+import { CustomerData, customerData } from '../customer/customer-data';
+import { CrudService } from '../service/crud.service';
 
-@Component({
-  selector: 'app-salle-detail',
-  templateUrl: './salle-detail.component.html',
-  styleUrls: ['./salle-detail.component.css'],
-})
-export class SalleDetailComponent {
-  messageCommande: string = '';
+interface GymProfile {
+  gym: SalleDeSport;
+  packs: Pack[];
+  coaches: CoachSalle[];
+}
 
-  constructor(
-    private service: CrudService,
-    private router: Router,
-    private activateRoute: ActivatedRoute
-  ) {}
-  salle: any = {};
-  listePack: Pack[];
-  coachSalle: CoachSalle[];
+@Component({ selector: 'app-salle-detail', templateUrl: './salle-detail.component.html' })
+export class SalleDetailComponent implements OnInit {
+  data$!: Observable<CustomerData<GymProfile | null>>;
 
-  ngOnInit() {
-    this.getSalle();
-    this.getPacks();
-    this.gtetCoachBySalleId();
-  }
-  getSalle() {
-    let id = this.activateRoute.snapshot.params['id'];
-    this.service.getSalleById(id).subscribe((data: any) => {
-      this.salle = data;
-      console.log(data);
-    });
-  }
+  constructor(private api: CrudService, private route: ActivatedRoute) {}
 
-  getPacks() {
-    let id = this.activateRoute.snapshot.params['id'];
-    this.service.getPackBySalleId(id).subscribe((pack) => {
-      this.listePack = pack;
-    });
-  }
+  ngOnInit(): void { this.load(); }
 
-  gtetCoachBySalleId() {
-    let id = this.activateRoute.snapshot.params['id'];
-    this.service.getCoachBySalleId(id).subscribe((data) => {
-      this.coachSalle = data;
-    });
-    console.log(this.coachSalle);
+  load(): void {
+    this.data$ = this.route.paramMap.pipe(switchMap(params => {
+      const id = Number(params.get('id'));
+      const profile = this.api.getSalleById(id).pipe(switchMap(gym => {
+        if (!gym?.id || gym.etat === false) return of(null);
+        return forkJoin({
+          gym: of(gym),
+          packs: this.api.getPackBySalleId(id).pipe(map(items => (items ?? []).filter(pack => pack?.id))),
+          coaches: this.api.getCoachBySalleId(id).pipe(map(items => (items ?? []).filter(coach => coach != null))),
+        });
+      }));
+      return customerData(profile, 'Impossible de charger cette salle.');
+    }));
   }
 }

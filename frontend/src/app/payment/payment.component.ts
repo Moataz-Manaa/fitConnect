@@ -1,72 +1,64 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CrudService } from '../service/crud.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Observable, finalize } from 'rxjs';
+import { Checkout, CheckoutService, checkoutErrorMessage, isCheckoutId } from '../service/checkout.service';
 
 @Component({
   selector: 'app-payment',
   templateUrl: './payment.component.html',
-  styleUrls: ['./payment.component.css'],
 })
-export class PaymentComponent {
-  paymentHandler: any = null;
-  invoiceGenerated: boolean = false;
-  id: any;
+export class PaymentComponent implements OnInit {
+  checkout?: Checkout;
+  id = '';
+  busy = false;
+  error = '';
+  needsLogin = false;
+  returnedFromStripe = false;
+  cancelledInStripe = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private service: CrudService,
-    private router: Router
-  ) {}
+  constructor(private route: ActivatedRoute, private service: CheckoutService) {}
 
-  ngOnInit() {
-    this.id = this.route.snapshot.params['id'];
-    this.invokeStripe();
-  }
-
-  makePayment() {
-    const paymentHandler = (<any>window).StripeCheckout.configure({
-      key: 'pk_test_51ORfw8CGCz5RXlZeoe3XDe37HmmqpZVdoHzeTdv6BwUbc2FN7TshEC3TQJeGrDQPE1oBRYJHeXUPDPqoUvwRZsAb00g0HXBiwp',
-      locale: 'auto',
-      token: (stripeToken: any) => {
-        console.log(stripeToken);
-        alert('Stripe token generated!');
-        this.displayInvoice();
-      },
-    });
-    paymentHandler.open({
-      name: '',
-      description: '',
-    });
-  }
-
-  invokeStripe() {
-    if (!window.document.getElementById('stripe-script')) {
-      const script = window.document.createElement('script');
-      script.id = 'stripe-script';
-      script.type = 'text/javascript';
-      script.src = 'https://checkout.stripe.com/checkout.js';
-      script.onload = () => {
-        this.paymentHandler = (<any>window).StripeCheckout.configure({
-          key: 'pk_test_51ORfw8CGCz5RXlZeoe3XDe37HmmqpZVdoHzeTdv6BwUbc2FN7TshEC3TQJeGrDQPE1oBRYJHeXUPDPqoUvwRZsAb00g0HXBiwp',
-          locale: 'auto',
-          token: (stripeToken: any) => {
-            console.log(stripeToken);
-            alert('Payment effectuée avec success!');
-          },
-        });
-      };
-      window.document.body.appendChild(script);
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!isCheckoutId(id)) {
+      this.error = 'Ce paiement est introuvable.';
+      return;
     }
+    this.id = id;
+    this.returnedFromStripe = this.route.snapshot.queryParamMap.get('returned') === 'true';
+    this.cancelledInStripe = this.route.snapshot.queryParamMap.get('cancelled') === 'true';
+    this.verify();
   }
 
-  displayInvoice() {
-    alert('Voici votre facture !');
-    this.invoiceGenerated = true;
+  verify(): void {
+    this.update(this.service.confirm(this.id));
   }
 
-  connexion(): void {
-    this.router.navigate([`/facture/${this.id}`]).then(() => {
-      window.location.reload();
+  cancel(): void {
+    this.update(this.service.cancel(this.id));
+  }
+
+  get historyRoute(): string {
+    return this.checkout?.kind === 'SESSION' ? '/listeReservationClient' : '/listeAbonnementClient';
+  }
+
+  get catalogRoute(): string {
+    if (this.checkout?.kind === 'SESSION') return '/coach';
+    return this.checkout?.kind === 'RENEWAL' ? '/listeAbonnementClient' : '/packs';
+  }
+
+  private update(request: Observable<Checkout>): void {
+    if (this.busy) return;
+    this.busy = true;
+    this.error = '';
+    this.needsLogin = false;
+    request.pipe(finalize(() => { this.busy = false; })).subscribe({
+      next: checkout => { this.checkout = checkout; },
+      error: (error: HttpErrorResponse) => {
+        this.error = checkoutErrorMessage(error);
+        this.needsLogin = error.status === 401 || error.status === 403;
+      },
     });
   }
 }

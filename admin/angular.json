@@ -51,6 +51,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "../proxy.conf.json",
+            "port": 4201
+          },
           "configurations": {
             "production": {
               "browserTarget": "admin:build:production"
@@ -75,6 +79,15 @@
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.css"],
             "scripts": []
+          },
+          "configurations": {
+            "ci": {
+              "tsConfig": "tsconfig.ci.json",
+              "include": [
+                "src/app/management/management-table.component.spec.ts",
+                "src/app/service/crud.service.spec.ts"
+              ]
+            }
           }
         }
       }

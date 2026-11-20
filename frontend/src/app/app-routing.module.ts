@@ -29,7 +29,6 @@ import { CalendarComponent } from './calendar/calendar.component';
 import { VideoCallComponent } from './video-call/video-call.component';
 import { SalleClientsComponent } from './salle-clients/salle-clients.component';
 import { CoachClientsComponent } from './coach-clients/coach-clients.component';
-import { RevenueComponent } from './revenue/revenue.component';
 import { SeanceClientComponent } from './seance-client/seance-client.component';
 import { ListeReservationClientComponent } from './liste-reservation-client/liste-reservation-client.component';
 import { ListeAbonnementClientComponent } from './liste-abonnement-client/liste-abonnement-client.component';
@@ -51,32 +50,22 @@ const routes: Routes = [
   {
     path: 'bmi',
     component: BmiComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client'] },
   },
   {
     path: 'packs',
     component: PackComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client'] },
   },
   {
     path: 'detail/:id',
     component: PackDetailComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client'] },
   },
   {
-    path: 'payment/:id',
+    path: 'checkout/:id',
     component: PaymentComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client'] },
   },
   {
     path: 'seance/:id',
     component: SeanceClientComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client'] },
   },
   {
     path: 'listeReservationClient',
@@ -94,14 +83,10 @@ const routes: Routes = [
   {
     path: 'coach',
     component: CoachComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client', 'salle'] },
   },
   {
     path: 'detail-coach/:id',
     component: CoachDetailComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client', 'salle'] },
   },
   {
     path: 'mes-clients-coach',
@@ -122,6 +107,12 @@ const routes: Routes = [
     data: { roles: ['coach'] },
   },
   // Salle-specific routes
+  {
+    path: 'espace-salle',
+    loadComponent: () => import('./management/gym-workspace.component').then(module => module.GymWorkspaceComponent),
+    canActivate: [AuthGuard],
+    data: { roles: ['salle'] },
+  },
   {
     path: 'ajouterPack',
     component: AjouterPackComponent,
@@ -161,14 +152,10 @@ const routes: Routes = [
   {
     path: 'liste-salle',
     component: ListeSalleComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client', 'coach'] },
   },
   {
     path: 'detail-salle/:id',
     component: SalleDetailComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['client', 'coach'] },
   },
   {
     path: 'mes-clients',
@@ -178,7 +165,8 @@ const routes: Routes = [
   },
   {
     path: 'revenue',
-    component: RevenueComponent,
+    loadComponent: () =>
+      import('./revenue/revenue.component').then(({ RevenueComponent }) => RevenueComponent),
     canActivate: [AuthGuard],
     data: { roles: ['salle'] },
   },
@@ -204,7 +192,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' })],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

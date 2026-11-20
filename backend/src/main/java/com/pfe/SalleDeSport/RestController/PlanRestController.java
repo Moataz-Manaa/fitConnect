@@ -1,5 +1,6 @@
 package com.pfe.SalleDeSport.RestController;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.pfe.SalleDeSport.Entity.Plan;
 import com.pfe.SalleDeSport.Dto.SavePlan;
 import com.pfe.SalleDeSport.Repository.PlanRepository;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping(value = "/plan")
 public class PlanRestController {
 
@@ -22,6 +22,7 @@ public class PlanRestController {
     PlanRepository planningCRepository;
 
     @PostMapping
+    @PreAuthorize("#model.id == null and @accountAccess.ownsAccount(authentication, #model.idCoach)")
     public ResponseEntity<?> ajouterPlanningCoach(@RequestBody SavePlan model) {
         if (planningCRepository.existsByDateAndDebutAndFinAndCoach_Id(
                 model.getDate(), model.getDebut(), model.getFin(), model.getIdCoach())) {
@@ -32,6 +33,7 @@ public class PlanRestController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@accountAccess.ownsPlan(authentication, #id) and @accountAccess.ownsAccount(authentication, #model.idCoach)")
     public ResponseEntity<?> updatePlanningCoach(@PathVariable Long id, @RequestBody SavePlan model) {
         if (planningCRepository.existsByDateAndDebutAndFinAndCoach_Id(
                 model.getDate(), model.getDebut(), model.getFin(), model.getIdCoach())) {
@@ -42,6 +44,7 @@ public class PlanRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@accountAccess.ownsPlan(authentication, #id)")
     public ResponseEntity<Void> deletePlanningCoach(@PathVariable Long id) {
         planningCService.deletePlanning(id);
         return ResponseEntity.ok().build();

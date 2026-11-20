@@ -1,72 +1,43 @@
-import { Component } from '@angular/core';
-import {
-  FormGroup,
-  FormBuilder,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { Admin } from '../Entity/Admin.Entity';
 import { CrudService } from '../service/crud.service';
 
-@Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
-})
+@Component({ selector: 'app-login', templateUrl: './login.component.html' })
 export class LoginComponent {
-  messageCommande = '';
-  loginForm: FormGroup;
-  constructor(
-    private fb: FormBuilder,
-    private service: CrudService,
-    private router: Router
-  ) {
-    let formControls = {
-      email: new FormControl('', [Validators.required, Validators.email]),
-      mp: new FormControl('', [Validators.required]),
-    };
+  private readonly destroyRef = inject(DestroyRef);
+  readonly form = inject(FormBuilder).nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    mp: ['', Validators.required],
+  });
+  busy = false;
+  error = '';
 
-    this.loginForm = this.fb.group(formControls);
-  }
+  constructor(private service: CrudService, private router: Router) {}
 
-  get email() {
-    return this.loginForm.get('email');
-  }
-  get mp() {
-    return this.loginForm.get('mp');
-  }
-
-  login() {
-    let data = this.loginForm.value;
-    console.log(data);
-    let admin = new Admin(null, null, null, data.email, data.mp, null);
-    console.log(admin);
-    if (data.email == 0 || data.mp == 0) {
-      this.messageCommande = `<div class="alert alert-danger" role="alert">
-        remplir votre champs
-      </div>`;
-    } else {
-      this.service.loginAdmin(admin).subscribe(
-        (res) => {
-          console.log(res);
-          this.messageCommande = `<div class="alert alert-success" role="alert">
-        avec success
-      </div>`;
-          let token = res.token;
-          localStorage.setItem('myToken', token);
-          localStorage.setItem('role', res.role);
-          this.router.navigate(['/home']).then(() => {
-            window.location.reload();
-          });
-        },
-        (err) => {
-          console.log(err);
-          this.messageCommande = `<div class="alert alert-danger" role="alert">
-            mot de passe ou email incorrect
-          </div>`;
-        }
-      );
+  login(): void {
+    if (this.busy) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.error = 'Saisissez votre adresse e-mail et votre mot de passe.';
+      return;
     }
+    this.error = '';
+    this.busy = true;
+    const { email, mp } = this.form.getRawValue();
+    this.service.loginAdmin(new Admin(undefined, undefined, undefined, email, mp)).pipe(
+      takeUntilDestroyed(this.destroyRef), finalize(() => this.busy = false)
+    ).subscribe({
+      next: ({ token, role }) => {
+        localStorage.setItem('myToken', token);
+        localStorage.setItem('role', role);
+        void this.router.navigate(['/home'], { replaceUrl: true });
+      },
+      error: error => this.error = error.status === 401
+        ? 'Adresse e-mail ou mot de passe incorrect.' : 'Connexion indisponible. Réessayez.',
+    });
   }
 }

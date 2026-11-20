@@ -1,0 +1,43 @@
+.fc-workspace-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .65rem;
+  margin-bottom: 1.4rem;
+  padding: .35rem;
+  border: 1px solid var(--fc-border);
+  border-radius: 12px;
+  background: var(--fc-soft);
+}
+
+.fc-workspace-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .5rem .8rem;
+  border-radius: 8px;
+  color: var(--fc-ink);
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 650;
+}
+
+.fc-workspace-nav a:hover { background: #e4ebd9; }
+.fc-workspace-nav a.fc-workspace-current { color: #fff; background: #2c4935; }
+.fc-workspace-feedback { margin-bottom: 1rem !important; }
+.fc-workspace-grid, .fc-workspace-chart-grid { display: grid; gap: 1rem; align-items: start; }
+.fc-workspace-grid { grid-template-columns: minmax(16rem, .75fr) minmax(0, 1.6fr); }
+.fc-workspace-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fc-workspace-chart { height: 16rem; position: relative; min-width: 0; }
+.fc-workspace-chart-grid details > summary { cursor: pointer; }
+.fc-revenue-total { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; font-weight: 780; }
+.fc-calendar-scroll { max-width: 100%; overflow-x: auto; padding: .2rem; }
+.fc-calendar-scroll > * { display: block; min-width: 30rem; }
+.fc-workspace-preview { max-width: 12rem; max-height: 9rem; object-fit: contain; border-radius: 8px; }
+.fc-directory-actions { margin-top: auto; }
+.fc-danger-text { color: #922b21; }
+.fc-danger { background: #922b21; color: #fff; }
+.fc-danger:hover { background: #742018; color: #fff; }
+
+@media (max-width: 860px) {
+  .fc-workspace-grid, .fc-workspace-chart-grid { grid-template-columns: minmax(0, 1fr); }
+}

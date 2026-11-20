@@ -1,74 +1,52 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Contact } from '../Entity/Contact.Entity';
 import { Client } from '../Entity/Client.Entity';
 import { SalleDeSport } from '../Entity/SalleDeSport.Entity';
 import { Coach } from '../Entity/Coach.Entity';
 import { catchError, Observable, tap } from 'rxjs';
 import { Category } from '../Entity/Category.Entity';
-import { JwtHelperService } from '@auth0/angular-jwt';
+import { activeSession } from './session';
 import { Pack } from '../Entity/Pack.Entity';
 import { SavePack } from '../Entity/SavePack.Entity';
 import { SaveCoach } from '../Entity/SaveCoach.Entity';
 import { CoachSalle } from '../Entity/CoachSalle.Entity';
 import { Plan } from '../Entity/Plan.Entity';
+import { SavePlan } from '../Entity/SavePlan.Entity';
 import { ClientSubscription } from '../Entity/ClientSubscription.Entity';
+import { Abonnement } from '../Entity/Abonnement.Entity';
 import { Reservation } from '../Entity/Reservation.Entity';
+
+export interface VideoRoomToken {
+  appId: number;
+  roomId: string;
+  userId: string;
+  userName: string;
+  token: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class CrudService {
-  helper = new JwtHelperService();
-  apiUrl = 'http://localhost:8081/api';
-  loginClientUrl = 'http://localhost:8081/api/client/login';
-  loginGymtUrl = 'http://localhost:8081/api/salleDeSport/login';
-  loginCoachUrl = 'http://localhost:8081/api/coach/login';
-  GoogleUrl = 'http://localhost:8081/api/client/login-google';
-
-  // Use getters and setters for token properties
-  get myTokenCoach(): string | null {
-    return localStorage.getItem('myTokenCoach');
-  }
-
-  set myTokenCoach(value: string | null) {
-    if (value) {
-      localStorage.setItem('myTokenCoach', value);
-    }
-  }
-
-  get myTokenSalle(): string | null {
-    return localStorage.getItem('myTokenSalle');
-  }
-
-  set myTokenSalle(value: string | null) {
-    if (value) {
-      localStorage.setItem('myTokenSalle', value);
-    }
-  }
-
-  get myTokenClient(): string | null {
-    return localStorage.getItem('myTokenClient');
-  }
-
-  set myTokenClient(value: string | null) {
-    if (value) {
-      localStorage.setItem('myTokenClient', value);
-    }
-  }
+  private readonly apiUrl = '/api';
 
   constructor(private http: HttpClient) {}
+
+  getVideoRoomToken(planningId: string): Observable<VideoRoomToken> {
+    return this.http.post<VideoRoomToken>(`${this.apiUrl}/video/rooms/${encodeURIComponent(planningId)}/token`, {});
+  }
 
   submitContact(contact: Contact) {
     return this.http.post<any>(this.apiUrl + '/contact', contact);
   }
 
   registerClient(client: Client) {
-    return this.http.post<any>(this.apiUrl + '/client', client);
+    return this.http.post(this.apiUrl + '/client', client, { responseType: 'text' });
   }
 
   loginClient(client: Client) {
-    return this.http.post<any>(this.loginClientUrl, client);
+    return this.http.post<any>(`${this.apiUrl}/client/login`, client);
   }
 
   registerSalleDeSport(salleDeSport: SalleDeSport) {
@@ -76,7 +54,7 @@ export class CrudService {
   }
 
   loginSalleDeSport(salleDeSport: SalleDeSport) {
-    return this.http.post<any>(this.loginGymtUrl, salleDeSport);
+    return this.http.post<any>(`${this.apiUrl}/salleDeSport/login`, salleDeSport);
   }
 
   registerCoach(coach: Coach) {
@@ -84,20 +62,21 @@ export class CrudService {
   }
 
   loginCoach(coach: Coach) {
-    return this.http.post<any>(this.loginCoachUrl, coach);
+    return this.http.post<any>(`${this.apiUrl}/coach/login`, coach);
   }
 
   forgotPassword(email: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/client/forgot-password?email=${email}`,
-      {},
+      `${this.apiUrl}/client/forgot-password`,
+      { email },
       { responseType: 'text' }
     );
   }
 
   resetPassword(token: string, newPassword: string): Observable<string> {
-    const url = `${this.apiUrl}/client/reset-password?token=${token}&newPassword=${newPassword}`;
-    return this.http.post(url, {}, { responseType: 'text' });
+    return this.http.post(`${this.apiUrl}/client/reset-password`, { token, newPassword }, {
+      responseType: 'text',
+    });
   }
 
   getCategory(): Observable<Category[]> {
@@ -113,20 +92,11 @@ export class CrudService {
   }
 
   getMyPacks(): Observable<Pack[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.myTokenSalle}`,
-    });
-
-    return this.http.get<Pack[]>(`${this.apiUrl}/pack/my-packs`, { headers });
+    return this.http.get<Pack[]>(`${this.apiUrl}/pack/my-packs`);
   }
 
   deletePack(id: number): Observable<string> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.myTokenSalle}`,
-    });
-
     return this.http.delete(`${this.apiUrl}/pack/${id}`, {
-      headers,
       responseType: 'text',
     });
   }
@@ -135,34 +105,20 @@ export class CrudService {
     return this.http.put<Pack>(`${this.apiUrl}/pack/${id}`, pack);
   }
 
-  isCoachIn() {
-    return !!this.myTokenCoach;
+  isCoachIn(): boolean {
+    return this.getUserType() === 'coach';
   }
 
-  isSalleIn() {
-    return !!this.myTokenSalle;
+  isSalleIn(): boolean {
+    return this.getUserType() === 'salle';
   }
 
-  isClientIn() {
-    return !!this.myTokenClient;
+  isClientIn(): boolean {
+    return this.getUserType() === 'client';
   }
 
   userDetails() {
-    let token: string | null = null;
-
-    if (this.isClientIn()) {
-      token = this.myTokenClient;
-    } else if (this.isSalleIn()) {
-      token = this.myTokenSalle;
-    } else if (this.isCoachIn()) {
-      token = this.myTokenCoach;
-    }
-
-    if (token) {
-      let decodeToken = this.helper.decodeToken(token);
-      return decodeToken.data;
-    }
-    return null;
+    return activeSession()?.claims.data ?? null;
   }
 
   // Get user data by ID
@@ -176,8 +132,8 @@ export class CrudService {
   }
 
   // Get salle by ID
-  getSalleById(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/salleDeSport/${id}`);
+  getSalleById(id: number): Observable<SalleDeSport> {
+    return this.http.get<SalleDeSport>(`${this.apiUrl}/salleDeSport/${id}`);
   }
 
   updateClient(
@@ -185,13 +141,8 @@ export class CrudService {
     clientData: any,
     currentPassword?: string
   ): Observable<any> {
-    let params = new HttpParams();
-    if (currentPassword) {
-      params = params.set('currentPassword', currentPassword);
-    }
-
     return this.http.put(`${this.apiUrl}/client/edit/${id}`, clientData, {
-      params,
+      headers: currentPassword ? { 'X-Current-Password': currentPassword } : {},
     });
   }
 
@@ -201,13 +152,8 @@ export class CrudService {
     coachData: any,
     currentPassword?: string
   ): Observable<any> {
-    let params = new HttpParams();
-    if (currentPassword) {
-      params = params.set('currentPassword', currentPassword);
-    }
-
     return this.http.put(`${this.apiUrl}/coach/edit/${id}`, coachData, {
-      params,
+      headers: currentPassword ? { 'X-Current-Password': currentPassword } : {},
     });
   }
 
@@ -217,26 +163,13 @@ export class CrudService {
     salleData: any,
     currentPassword?: string
   ): Observable<any> {
-    let params = new HttpParams();
-    if (currentPassword) {
-      params = params.set('currentPassword', currentPassword);
-    }
-
     return this.http.put(`${this.apiUrl}/salleDeSport/edit/${id}`, salleData, {
-      params,
+      headers: currentPassword ? { 'X-Current-Password': currentPassword } : {},
     });
   }
 
-  reserverFromApi(rq: any) {
-    return this.http.post<any>(this.apiUrl + '/abonnement', rq);
-  }
-
-  reserverCoach(rq: any) {
-    return this.http.post<any>(this.apiUrl + '/reservation', rq);
-  }
-
-  getPackByIdApi(id: number): Observable<Pack[]> {
-    return this.http.get<Pack[]>(this.apiUrl + '/pack/get-id/' + id);
+  getPackByIdApi(id: number): Observable<Pack> {
+    return this.http.get<Pack>(this.apiUrl + '/pack/get-id/' + id);
   }
 
   addCoach(saveCoach: SaveCoach) {
@@ -244,28 +177,21 @@ export class CrudService {
   }
 
   getMyCoach(): Observable<CoachSalle[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.myTokenSalle}`,
-    });
-
-    return this.http.get<CoachSalle[]>(`${this.apiUrl}/coachSalle/my-coach`, {
-      headers,
-    });
+    return this.http.get<CoachSalle[]>(`${this.apiUrl}/coachSalle/my-coach`);
   }
 
   deleteCoach(id: number): Observable<string> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.myTokenSalle}`,
-    });
-
     return this.http.delete(`${this.apiUrl}/coachSalle/${id}`, {
-      headers,
       responseType: 'text',
     });
   }
 
   getCoachsSalle(): Observable<CoachSalle[]> {
     return this.http.get<CoachSalle[]>(this.apiUrl + '/coachSalle');
+  }
+
+  getGymCoach(id: number): Observable<CoachSalle | null> {
+    return this.http.get<CoachSalle | null>(`${this.apiUrl}/coachSalle/${id}`);
   }
 
   updateCoachSalle(id: number, coach: SaveCoach): Observable<CoachSalle> {
@@ -293,15 +219,10 @@ export class CrudService {
   }
 
   getMyClients(): Observable<ClientSubscription[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.myTokenSalle}`,
-    });
-
     return this.http.get<ClientSubscription[]>(
       `${this.apiUrl}/salleDeSport/my-clients`,
       {
-        headers,
-      }
+        }
     );
   }
 
@@ -334,12 +255,11 @@ export class CrudService {
   }
 
   signInWithGoogle(idToken: string): Observable<any> {
-    const params = new HttpParams().set('id_token', idToken);
-    return this.http.post(this.GoogleUrl, null, { params });
+    return this.http.post(`${this.apiUrl}/client/login-google`, { idToken });
   }
 
-  addPlanningC(planningC: Plan) {
-    return this.http.post<any>(this.apiUrl + '/plan', planningC);
+  addPlanningC(planningC: SavePlan): Observable<Plan> {
+    return this.http.post<Plan>(this.apiUrl + '/plan', planningC);
   }
 
   getPlanningC(id: number): Observable<Plan[]> {
@@ -348,33 +268,11 @@ export class CrudService {
   }
 
   getUserType(): string | null {
-    if (localStorage.getItem('myTokenClient')) {
-      return 'client';
-    } else if (localStorage.getItem('myTokenCoach')) {
-      return 'coach';
-    } else if (localStorage.getItem('myTokenSalle')) {
-      return 'salle';
-    }
-    return null;
+    return activeSession()?.role ?? null;
   }
 
   getUserId(): number | null {
-    const userType = this.getUserType();
-    let token: string | null = null;
-
-    if (userType === 'client') {
-      token = localStorage.getItem('myTokenClient');
-    } else if (userType === 'coach') {
-      token = localStorage.getItem('myTokenCoach');
-    } else if (userType === 'salle') {
-      token = localStorage.getItem('myTokenSalle');
-    }
-
-    if (token) {
-      const decodedToken = this.helper.decodeToken(token);
-      return decodedToken.data.id; // Adjust the path based on your token structure
-    }
-    return null;
+    return this.userDetails()?.id ?? null;
   }
 
   getUserDetails(): Observable<any> {
@@ -396,17 +294,13 @@ export class CrudService {
     throw new Error('Unknown user type');
   }
 
-  reserverseanceFromApi(rq: any) {
-    return this.http.post<any>('http://localhost:8081/api/reservation', rq);
-  }
-
   getReservationByIdclient(id: number): Observable<Reservation[]> {
     const url = `${this.apiUrl + '/reservation/get-all-by-id-client'}/${id}`;
     return this.http.get<Reservation[]>(url);
   }
 
-  getAbonnementsByClientId(id: number): Observable<any[]> {
-    return this.http.get<any[]>(
+  getAbonnementsByClientId(id: number): Observable<Abonnement[]> {
+    return this.http.get<Abonnement[]>(
       `${this.apiUrl}/abonnement/get-all-by-id-Client/${id}`
     );
   }
@@ -417,13 +311,4 @@ export class CrudService {
     );
   }
 
-  renouvelerAbonnementFromApi(renewalData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/abonnements/renouveler`, renewalData);
-  }
-
-  getRenewalPreview(clientId: number, packId: number): Observable<any> {
-    return this.http.get(
-      `${this.apiUrl}/abonnements/renewal-preview/${clientId}/${packId}`
-    );
-  }
 }

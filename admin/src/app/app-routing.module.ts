@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { NgModule, inject } from '@angular/core';
+import { Router, RouterModule, Routes } from '@angular/router';
 import { AjouterAdminComponent } from './ajouter-admin/ajouter-admin.component';
 import { ListeAdminComponent } from './liste-admin/liste-admin.component';
 import { LoginComponent } from './login/login.component';
@@ -11,63 +11,39 @@ import { ListeSalleDeSportComponent } from './liste-salle-de-sport/liste-salle-d
 import { ListeCoachComponent } from './liste-coach/liste-coach.component';
 import { ListeCategoryComponent } from './liste-category/liste-category.component';
 import { AuthGuard } from './service/Auth.Service';
+import { isSuperAdmin } from './service/session';
 import { ListePackComponent } from './liste-pack/liste-pack.component';
 import { MonCompteComponent } from './mon-compte/mon-compte.component';
+import { AdminShellComponent } from './management/admin-shell.component';
+
+const requireSuperAdmin = () => isSuperAdmin() || inject(Router).createUrlTree(['/listeAdmin']);
 
 const routes: Routes = [
-  { path: '', component: AjouterAdminComponent, canActivate: [AuthGuard] },
-  {
-    path: 'listeAdmin',
-    component: ListeAdminComponent,
-    canActivate: [AuthGuard],
-  },
   { path: 'login', component: LoginComponent },
-  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
   {
-    path: 'modifierAdmin/:id',
-    component: ModifierAdminComponent,
-    canActivate: [AuthGuard],
+    path: '',
+    component: AdminShellComponent,
+    canActivateChild: [AuthGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'home' },
+      { path: 'home', component: HomeComponent },
+      { path: 'ajouter-admin', component: AjouterAdminComponent, canActivate: [requireSuperAdmin] },
+      { path: 'modifierAdmin/:id', component: ModifierAdminComponent, canActivate: [requireSuperAdmin] },
+      { path: 'listeAdmin', component: ListeAdminComponent },
+      { path: 'listeContact', component: ListeContactComponent },
+      { path: 'listeClient', component: ListeClientComponent },
+      { path: 'listeSalleDeSport', component: ListeSalleDeSportComponent },
+      { path: 'listeCoach', component: ListeCoachComponent },
+      { path: 'listeCategory', component: ListeCategoryComponent },
+      { path: 'listePack', component: ListePackComponent },
+      { path: 'mon-compte', component: MonCompteComponent },
+    ],
   },
-  {
-    path: 'listeContact',
-    component: ListeContactComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'listeClient',
-    component: ListeClientComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'listeSalleDeSport',
-    component: ListeSalleDeSportComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'listeCoach',
-    component: ListeCoachComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'listeCategory',
-    component: ListeCategoryComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'listePack',
-    component: ListePackComponent,
-    canActivate: [AuthGuard],
-  },
-
-  {
-    path: 'mon-compte',
-    component: MonCompteComponent,
-    canActivate: [AuthGuard],
-  },
+  { path: '**', redirectTo: 'home' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

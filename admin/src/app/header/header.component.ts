@@ -1,25 +1,21 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CrudService } from '../service/crud.service';
-import { interval, Subscription } from 'rxjs';
+import { adminSession } from '../service/session';
 
-@Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
-})
+@Component({ selector: 'app-header', templateUrl: './header.component.html' })
 export class HeaderComponent {
-  userDetails: any;
+  private readonly document = inject(DOCUMENT);
 
-  constructor(private service: CrudService, private router: Router) {
-    this.userDetails = this.service.userDetails();
-  }
+  constructor(private router: Router) {}
 
-  logout() {
-    console.log('logout');
-    localStorage.clear();
-    this.router.navigate(['/login']).then(() => {
-      window.location.reload();
-    });
+  get user() { return adminSession()?.claims.data; }
+
+  focusContent(): void { this.document.getElementById('admin-main')?.focus(); }
+
+  logout(): void {
+    localStorage.removeItem('myToken');
+    localStorage.removeItem('role');
+    void this.router.navigate(['/login'], { replaceUrl: true });
   }
 }

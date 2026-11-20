@@ -1,135 +1,33 @@
-<header class="site-header mo-left header style-1">
-  <!-- Main Header -->
-  <div class="sticky-header main-bar-wraper navbar-expand-lg border-bottom">
-    <div class="main-bar clearfix">
-      <div class="container clearfix">
-        <div class="clearfix">
-          <!-- Website Logo -->
-          <div class="logo-header mostion logo-dark">
-            <a href="index.html"
-              ><img src="assets/images/logo66.png" alt=""
-            /></a>
-          </div>
-
-          <!-- Nav Toggle Button -->
-          <button
-            class="navbar-toggler navbar-toggler-skew collapsed navicon justify-content-end"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-
-          <!-- Extra Nav -->
-          <div class="extra-nav">
-            <div class="extra-cell">
-              <a
-                href="/contact"
-                class="btn btn-primary btn-skew appointment-btn"
-                ><span class="skew-inner"
-                  ><span class="text">Contact</span></span
-                ></a
-              >
-            </div>
-          </div>
-          <!-- Extra Nav -->
-
-          <!-- Search Form -->
-          <div class="dz-quik-search">
-            <form action="#">
-              <input
-                name="search"
-                value=""
-                type="text"
-                class="form-control"
-                placeholder="Enter Your Keyword ..."
-              />
-              <span id="quik-search-remove"
-                ><i class="fa-solid fa-xmark"></i
-              ></span>
-            </form>
-          </div>
-
-          <!-- Header Nav -->
-          <div
-            class="header-nav navbar-collapse collapse justify-content-end"
-            id="navbarNavDropdown"
-          >
-            <div class="logo-header logo-dark">
-              <a href="index.html"
-                ><img src="assets/images/logo.png" alt=""
-              /></a>
-            </div>
-            <ul class="nav navbar-nav navbar navbar-left">
-              <li>
-                <a href="/">Accueil</a>
-              </li>
-              <li>
-                <a href="/about">Qui Sommes nous</a>
-              </li>
-              <li class="sub-menu-down" *ngIf="IsClientIn">
-                <a>Services</a>
-                <ul class="sub-menu">
-                  <li *ngIf="IsClientIn">
-                    <a href="/liste-salle">Salle de sport</a>
-                  </li>
-                  <li *ngIf="IsClientIn">
-                    <a href="/coach">Coach</a>
-                  </li>
-                  <li *ngIf="IsClientIn">
-                    <a href="/listeAbonnementClient">Abonnements</a>
-                  </li>
-                  <li *ngIf="IsClientIn">
-                    <a href="/listeReservationClient">Réservations</a>
-                  </li>
-                </ul>
-              </li>
-              <li class="sub-menu-down" *ngIf="IsSalleIn">
-                <a>Services</a>
-                <ul class="sub-menu">
-                  <li><a href="/ajouterPack">Ajouter pack</a></li>
-                  <li><a href="/mesPacks">Mes packs</a></li>
-                  <li><a href="/ajouter-coach">Ajouter coach</a></li>
-                  <li><a href="/mes-coach">Mes coachs</a></li>
-                  <li><a href="/mes-clients">Mes clients</a></li>
-                  <li><a href="/revenue">Revenu</a></li>
-                </ul>
-              </li>
-              <li class="sub-menu-down" *ngIf="IsCoachIn">
-                <a>Services</a>
-                <ul class="sub-menu">
-                  <li><a href="/calendar">Calendrier</a></li>
-                  <li><a href="/listeReservationCoach">Mes séances</a></li>
-                </ul>
-              </li>
-              <li *ngIf="IsCoachIn || IsSalleIn || IsClientIn">
-                <a href="/edit-profile">Profile</a>
-              </li>
-              <li
-                class="sub-menu-down"
-                *ngIf="!IsCoachIn && !IsSalleIn && !IsClientIn"
-              >
-                <a>Connexion</a>
-                <ul class="sub-menu">
-                  <li><a href="/loginClient">Client</a></li>
-                  <li><a href="/loginSalleDeSport">Salle de sport</a></li>
-                  <li><a href="/loginCoach">Coach privé</a></li>
-                </ul>
-              </li>
-              <li *ngIf="IsCoachIn || IsSalleIn || IsClientIn">
-                <a href="#" (click)="logout()">Déconnexion</a>
-              </li>
-            </ul>
-          </div>
+<header class="fc-header" (keydown.escape)="closeMenus()">
+  <div class="fc-wrap fc-header-inner">
+    <a class="fc-brand" routerLink="/" (click)="closeMenus()" aria-label="FitConnect, accueil">
+      <span class="fc-brand-icon" aria-hidden="true">F</span>Fit<span>Connect</span>
+    </a>
+    <button class="fc-menu-toggle fc-button fc-button-outline" type="button" (click)="menuOpen = !menuOpen"
+      [attr.aria-expanded]="menuOpen" aria-controls="fc-navigation">{{ menuOpen ? 'Fermer' : 'Menu' }}</button>
+    <nav id="fc-navigation" class="fc-nav" [class.fc-nav-open]="menuOpen" aria-label="Navigation principale">
+      <a routerLink="/liste-salle" routerLinkActive="fc-active" ariaCurrentWhenActive="page" (click)="closeMenus()">Salles</a>
+      <a routerLink="/coach" routerLinkActive="fc-active" ariaCurrentWhenActive="page" (click)="closeMenus()">Coachs</a>
+      <a routerLink="/packs" routerLinkActive="fc-active" ariaCurrentWhenActive="page" (click)="closeMenus()">Abonnements</a>
+      <a routerLink="/about" routerLinkActive="fc-active" ariaCurrentWhenActive="page" (click)="closeMenus()">À propos</a>
+      <div class="fc-account">
+        <button type="button" class="fc-button fc-button-primary" [attr.aria-expanded]="accountOpen"
+          aria-controls="fc-account-links" (click)="accountOpen = !accountOpen">
+          {{ role ? 'Mon espace' : 'Connexion' }} <span aria-hidden="true">⌄</span>
+        </button>
+        <div class="fc-account-links" id="fc-account-links" [hidden]="!accountOpen">
+          <ng-container *ngIf="role; else signInLinks">
+            <a *ngFor="let link of links" [routerLink]="link.url" (click)="closeMenus()">{{ link.label }}</a>
+            <a routerLink="/edit-profile" (click)="closeMenus()">Mon profil</a>
+            <button type="button" (click)="logout()">Déconnexion</button>
+          </ng-container>
+          <ng-template #signInLinks>
+            <a routerLink="/loginClient" (click)="closeMenus()">Espace membre</a>
+            <a routerLink="/loginCoach" (click)="closeMenus()">Espace coach</a>
+            <a routerLink="/loginSalleDeSport" (click)="closeMenus()">Espace salle</a>
+          </ng-template>
         </div>
       </div>
-    </div>
+    </nav>
   </div>
-  <!-- Main Header End -->
 </header>

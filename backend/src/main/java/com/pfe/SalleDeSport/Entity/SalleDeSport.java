@@ -1,5 +1,6 @@
 package com.pfe.SalleDeSport.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class SalleDeSport {
     private String nom;
     private String email;
     private String adresse;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String mp;
     private String telephone;
     @Lob

@@ -1,60 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Observable, map, switchMap } from 'rxjs';
+import { Coach } from '../Entity/Coach.Entity';
+import { CustomerData, customerData } from '../customer/customer-data';
 import { CrudService } from '../service/crud.service';
-import { ActivatedRoute, Router } from '@angular/router';
 
-@Component({
-  selector: 'app-coach-detail',
-  templateUrl: './coach-detail.component.html',
-  styleUrls: ['./coach-detail.component.css'],
-})
-export class CoachDetailComponent {
-  messageCommande: string = '';
+@Component({ selector: 'app-coach-detail', templateUrl: './coach-detail.component.html' })
+export class CoachDetailComponent implements OnInit {
+  data$!: Observable<CustomerData<Coach | null>>;
 
-  constructor(
-    private service: CrudService,
-    private router: Router,
-    private activateRoute: ActivatedRoute
-  ) {}
-  coach: any = {};
-  reserver(event: any) {
-    this.messageCommande = `<div class="alert alert-primary" role="alert">
-    Veuillez patienter ...
-  </div>`;
-    console.log(event);
-    let rq: any = {};
-    rq.idClient = this.service.userDetails()?.id;
-    rq.idCoach = event.id;
+  constructor(private api: CrudService, private route: ActivatedRoute) {}
 
-    console.log(rq, 'what we senddddd');
-    this.service.reserverCoach(rq).subscribe(
-      (data: any) => {
-        const id = data.id;
-        this.router.navigate([`/payment/${id}`]).then(() => {
-          window.location.reload();
-        });
+  ngOnInit(): void { this.load(); }
 
-        this.messageCommande = `<div class="alert alert-success" role="alert">
-    Réservé avec succès
-  </div>`;
-      },
-      (err) => {
-        this.messageCommande = `<div class="alert alert-warning" role="alert">
-     Erreur, Veuillez réssayer !! 
-    </div>`;
-      }
-    );
-    setTimeout(() => {
-      this.messageCommande = '';
-    }, 3000);
-  }
-  ngOnInit() {
-    this.getCoach();
-  }
-  getCoach() {
-    let id = this.activateRoute.snapshot.params['id'];
-    this.service.getCoach(id).subscribe((data: any) => {
-      this.coach = data;
-      console.log(data);
-    });
+  load(): void {
+    this.data$ = this.route.paramMap.pipe(switchMap(params =>
+      customerData(this.api.getCoach(Number(params.get('id'))).pipe(
+        map(coach => coach?.id && coach.etat !== false ? coach : null)
+      ), 'Impossible de charger ce coach.')
+    ));
   }
 }

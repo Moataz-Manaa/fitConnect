@@ -1,157 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Form Elements | Osen - Responsive Bootstrap 5 Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      content="A fully featured admin theme which can be used to build CRM, CMS, etc."
-      name="description"
-    />
-    <meta content="Coderthemes" name="author" />
-  </head>
-
-  <body>
-    <div class="wrapper">
-      <app-menu></app-menu>
-      <header class="app-topbar">
-        <app-header></app-header>
-      </header>
-
-      <div
-        class="modal fade"
-        id="searchModal"
-        tabindex="-1"
-        aria-labelledby="searchModalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content bg-transparent">
-            <div class="card mb-1">
-              <div
-                class="px-3 py-2 d-flex flex-row align-items-center"
-                id="top-search"
-              >
-                <i class="ti ti-search fs-22"></i>
-                <input
-                  type="search"
-                  class="form-control border-0"
-                  id="search-modal-input"
-                  placeholder="Search for actions, people,"
-                />
-                <button
-                  type="button"
-                  class="btn p-0"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  [esc]
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="page-content">
-        <div class="page-container">
-          <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div
-                  class="card-header border-bottom border-dashed d-flex align-items-center"
-                >
-                  <h4 class="header-title">Modifier Administrateur</h4>
-                </div>
-
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <form (ngSubmit)="updateAdmin()" [formGroup]="adminForm">
-                        <div class="mb-3">
-                          <label for="simpleinput" class="form-label"
-                            >Nom</label
-                          >
-                          <input
-                            formControlName="nom"
-                            type="text"
-                            id="simpleinput"
-                            class="form-control"
-                            placeholder="Nom"
-                          />
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="simpleinput" class="form-label"
-                            >Prénom</label
-                          >
-                          <input
-                            formControlName="prenom"
-                            type="text"
-                            id="simpleinput"
-                            class="form-control"
-                            placeholder="Prenom"
-                          />
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="example-email" class="form-label"
-                            >Email</label
-                          >
-                          <input
-                            formControlName="email"
-                            type="email"
-                            id="example-email"
-                            name="example-email"
-                            class="form-control"
-                            placeholder="Email"
-                          />
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="example-password" class="form-label"
-                            >Mot de passe</label
-                          >
-                          <input
-                            formControlName="mp"
-                            type="password"
-                            id="example-password"
-                            class="form-control"
-                            value=""
-                          />
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="example-select" class="form-label"
-                            >Role</label
-                          >
-                          <select
-                            formControlName="role"
-                            class="form-select"
-                            id="example-select"
-                          >
-                            <option value="Super Administrateur">
-                              Super Administrateur
-                            </option>
-                            <option value="Sous Administrateur">
-                              Sous Administrateur
-                            </option>
-                          </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                          Modifier
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <app-footer></app-footer>
-      </div>
+<header class="adm-heading"><h1>{{ title }}</h1></header>
+<p *ngIf="loading" class="adm-notice" role="status">Chargement du compte…</p>
+<div *ngIf="loadError" class="adm-notice adm-error" role="alert">
+  {{ loadError }}
+  <button class="adm-button adm-secondary" type="button" (click)="load()">Réessayer</button>
+</div>
+<section *ngIf="ready" class="adm-panel adm-editor">
+  <form *ngIf="canEdit; else readOnly" class="adm-form" [formGroup]="form" (ngSubmit)="save()" [attr.aria-busy]="busy">
+    <div class="adm-form-row">
+      <label>Prénom<input formControlName="prenom" autocomplete="given-name" required /></label>
+      <label>Nom<input formControlName="nom" autocomplete="family-name" required /></label>
     </div>
-  </body>
-</html>
+    <label>Adresse e-mail<input type="email" formControlName="email" autocomplete="email" required /></label>
+    <label *ngIf="mode !== 'profile'">Rôle
+      <select formControlName="role" required>
+        <option value="">Choisir un rôle</option>
+        <option>Sous Administrateur</option>
+        <option>Super Administrateur</option>
+      </select>
+    </label>
+    <label>{{ mode === 'create' ? 'Mot de passe' : 'Nouveau mot de passe (facultatif)' }}
+      <input type="password" formControlName="mp" autocomplete="new-password" [required]="mode === 'create'" />
+    </label>
+    <p *ngIf="error" class="adm-notice adm-error" role="alert">{{ error }}</p>
+    <p *ngIf="success" class="adm-notice adm-success" role="status">{{ success }}</p>
+    <div class="adm-actions">
+      <button class="adm-button" type="submit" [disabled]="busy">{{ busy ? 'Enregistrement…' : 'Enregistrer' }}</button>
+      <a *ngIf="mode !== 'profile'" class="adm-button adm-secondary" routerLink="/listeAdmin">Retour à la liste</a>
+    </div>
+  </form>
+  <ng-template #readOnly>
+    <dl class="adm-facts">
+      <dt>Nom</dt><dd>{{ form.controls.prenom.value }} {{ form.controls.nom.value }}</dd>
+      <dt>Adresse e-mail</dt><dd>{{ form.controls.email.value }}</dd>
+      <dt>Rôle</dt><dd>{{ form.controls.role.value || '—' }}</dd>
+    </dl>
+  </ng-template>
+</section>

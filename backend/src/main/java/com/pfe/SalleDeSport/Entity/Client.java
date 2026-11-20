@@ -1,5 +1,6 @@
 package com.pfe.SalleDeSport.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,6 +14,7 @@ public class Client {
     private String nom;
     private String prenom;
     private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String mp;
     private String telephone;
     private int age;

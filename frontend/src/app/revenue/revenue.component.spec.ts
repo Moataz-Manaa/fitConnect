@@ -1,4 +1,6 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { RevenueComponent } from './revenue.component';
 
@@ -8,7 +10,7 @@ describe('RevenueComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [RevenueComponent]
+      imports: [RevenueComponent, HttpClientTestingModule, RouterTestingModule]
     });
     fixture = TestBed.createComponent(RevenueComponent);
     component = fixture.componentInstance;

@@ -1,32 +1,32 @@
 package com.pfe.SalleDeSport.RestController;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.pfe.SalleDeSport.Dto.SaveCoach;
 import com.pfe.SalleDeSport.Entity.*;
 import com.pfe.SalleDeSport.Service.CoachSalleService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping(value = "/coachSalle")
 public class CoachSalleRestController {
     @Autowired
     CoachSalleService coachSalleService;
 
     @RequestMapping(method = RequestMethod.POST)
+    @PreAuthorize("#coach.id == null and @accountAccess.ownsAccount(authentication, #coach.idSalle)")
     public CoachSalle AjouterCoachSalle (@RequestBody SaveCoach coach){
         return coachSalleService.ajouterCoach(coach);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE )
+    @PreAuthorize("@accountAccess.ownsGymCoach(authentication, #id)")
     public void suppCoach(@PathVariable("id") Long id){
         coachSalleService.supprimerCoach(id);
     }
@@ -37,35 +37,18 @@ public class CoachSalleRestController {
     }
 
     @RequestMapping(value = "/{id}",method = RequestMethod.GET )
+    @PreAuthorize("@accountAccess.ownsGymCoach(authentication, #id)")
     public Optional<CoachSalle> afficherCoachById(@PathVariable("id") Long id){
         return coachSalleService.afficherCoachById(id);
     }
 
     @GetMapping("/my-coach")
-    public ResponseEntity<List<CoachSalle>> getMyCoachs(@RequestHeader("Authorization") String authHeader) {
-        // Remove "Bearer " prefix if present
-        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-
-        try {
-            // Decode the token
-            Claims claims = Jwts.parser()
-                    .setSigningKey("SECRET") // Use the same secret as in login
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            // Extract SalleDeSport from the "data" claim
-            Map<String, Object> data = (Map<String, Object>) claims.get("data");
-            Long salleId = ((Number) data.get("id")).longValue(); // Cast to Long
-
-            // Fetch packs for this SalleDeSport
-            List<CoachSalle> coachs = coachSalleService.afficherCoachBySalleId(salleId);
-            return ResponseEntity.ok(coachs);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+    public List<CoachSalle> getMyCoachs(@AuthenticationPrincipal Jwt jwt) {
+        return coachSalleService.afficherCoachBySalleId(Long.valueOf(jwt.getSubject()));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@accountAccess.ownsGymCoach(authentication, #id) and @accountAccess.ownsAccount(authentication, #model.idSalle)")
     public ResponseEntity<CoachSalle> updateCoach(@PathVariable Long id, @RequestBody SaveCoach model) {
         return ResponseEntity.ok(coachSalleService.modifierCoach(model, id));
     }

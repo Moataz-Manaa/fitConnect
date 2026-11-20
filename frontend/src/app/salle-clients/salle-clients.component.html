@@ -1,89 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <!-- Title -->
-    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
-
-    <!-- Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body id="bg" class="data-typography-1">
-    <div class="page-wraper">
-      <!-- Header -->
-      <app-header></app-header>
-      <!-- Header -->
-
-      <div class="page-content bg-white" style="height: 100vh">
-        <!-- Our Shop Cart-->
-        <section>
-          <div class="container">
-            <h1 style="margin-top: 25px; margin-bottom: 25px">Mes clients</h1>
-            <div class="row">
-              <div class="col-lg-12">
-                <div class="table-responsive">
-                  <table
-                    class="table check-tbl wow fadeInUp"
-                    data-wow-delay="0.4s"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Email</th>
-                        <th>Téléphone</th>
-                        <th>Age</th>
-                        <th>Pack réservé</th>
-                        <th>Date de création</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        *ngFor="
-                          let subscription of clientSubscriptions
-                            | paginate : { itemsPerPage: 5, currentPage: p }
-                        "
-                      >
-                        <td class="product-item-name">
-                          {{ subscription.nom }}
-                        </td>
-                        <td class="product-item-name">
-                          {{ subscription.prenom }}
-                        </td>
-                        <td class="product-item-name">
-                          {{ subscription.email }}
-                        </td>
-                        <td class="product-item-name">
-                          {{ subscription.telephone }}
-                        </td>
-                        <td class="product-item-name">
-                          {{ subscription.age }}
-                        </td>
-                        <td class="product-item-name">
-                          {{ subscription.packNom }}
-                        </td>
-                        <td class="product-item-name">
-                          {{ formatDate(subscription.dateCreation) }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <pagination-controls
-                    style="text-align: right"
-                    (pageChange)="p = $event"
-                  ></pagination-controls>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <!-- Our Shop Cart-->
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section">
+  <header class="fc-page-heading"><h1>Mes membres</h1><p>Retrouvez les membres et l’état de leurs abonnements.</p></header>
+  <app-workspace-nav role="salle"></app-workspace-nav>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="load()"></app-page-state>
+    <ng-container *ngIf="data.value as items">
+      <div *ngIf="items.length" class="fc-filter">
+        <label class="fc-field">Rechercher
+          <input type="search" [(ngModel)]="query" (ngModelChange)="page = 1" placeholder="Nom, e-mail ou pack" />
+        </label>
+        <label class="fc-field">État de l’abonnement
+          <select [(ngModel)]="subscriptionStatus" (ngModelChange)="page = 1">
+            <option value="">Tous</option><option value="actif">Actifs</option>
+            <option value="en_attente">À venir</option><option value="inactif">Inactifs</option>
+          </select>
+        </label>
       </div>
-
-      <!-- Footer -->
-      <app-footer></app-footer>
-      <!-- Footer End -->
-    </div>
-  </body>
-</html>
+      <ng-container *ngIf="results(items) as matches">
+        <app-page-state *ngIf="!matches.length" [message]="items.length ? 'Aucun résultat pour cette recherche.' : 'Aucun abonnement pour le moment.'"></app-page-state>
+        <div class="fc-grid" *ngIf="matches.length">
+          <article class="fc-card fc-card-body" *ngFor="let item of matches | paginate: { itemsPerPage: 9, currentPage: page }">
+            <div>
+              <h2>{{ item.prenom }} {{ item.nom }}</h2>
+              <p class="fc-muted">{{ item.packNom }}</p>
+            </div>
+            <p><span class="fc-pill" [class.fc-pill-active]="item.etat === 'actif'" [class.fc-pill-pending]="item.etat === 'en_attente'">{{ labels[item.etat] || 'État indisponible' }}</span></p>
+            <dl class="fc-facts">
+              <ng-container *ngIf="item.email"><dt>E-mail</dt><dd><a class="fc-text-link" [href]="'mailto:' + item.email">{{ item.email }}</a></dd></ng-container>
+              <ng-container *ngIf="item.telephone"><dt>Téléphone</dt><dd>{{ item.telephone }}</dd></ng-container>
+              <ng-container *ngIf="item.age"><dt>Âge</dt><dd>{{ item.age }} ans</dd></ng-container>
+              <ng-container *ngIf="item.dateCreation"><dt>Paiement</dt><dd>{{ item.dateCreation | date : 'dd/MM/yyyy' : 'UTC' }}</dd></ng-container>
+              <ng-container *ngIf="item.dateActivation"><dt>Activation</dt><dd>{{ item.dateActivation | date : 'dd/MM/yyyy' : 'UTC' }}</dd></ng-container>
+            </dl>
+          </article>
+        </div>
+        <pagination-controls *ngIf="matches.length > 9" (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant"
+          screenReaderPaginationLabel="Pagination" screenReaderPageLabel="Page" screenReaderCurrentLabel="Page actuelle"></pagination-controls>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</main>
+<app-footer></app-footer>

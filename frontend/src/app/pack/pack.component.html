@@ -1,307 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-  <!-- Mirrored from powerzone.dexignzone.com/xhtml/shop.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:41 GMT -->
-  <head>
-    <!-- Title -->
-    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
-
-    <!-- Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="author" content="DexignZone" />
-    <meta name="robots" content="index, follow" />
-    <meta
-      name="keywords"
-      content="bodybuilding, class, clean, coach, fitness, fitness gym, gym, gym trainer, health, martial arts, personal trainer, sport, sports theme, training, workout, Fitness template, Workout design, Health and wellness, Exercise layout, Fitness app, Gym website, UI components, UX components, Workout routines, Health template, UIUX, creative, HTML, CSS, Sass Integration, HTML Template, Bootstrap, Bootstrap Template, Gym UI Kit, websiite, Website template, Fitness Website Design, Exercise App Design, Gym Interface, Exercise Dashboard, Gym Homepage Template, HTML Gym Template, Responsive Gym Design, responsive, HTML Fitness Components, Workout Program Template, Fitness Studio HTML, Responsive Workout Design, Landing Page Kit, HTML5, HTML/CSS"
-    />
-    <meta
-      name="description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta
-      property="og:title"
-      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
-    />
-    <meta
-      property="og:description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta property="og:image" content="social-image.png" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta
-      name="twitter:title"
-      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
-    />
-    <meta
-      name="twitter:description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta name="twitter:image" content="social-image.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-
-    <!-- Mobile Specific -->
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      /* Ensure all cards have the same height */
-      .shop-card {
-        display: flex;
-        flex-direction: column;
-        height: 330px; /* Set a fixed height for all cards - adjust as needed */
-        overflow: hidden; /* Prevent content from overflowing */
-        border: 1px solid #ddd; /* Optional: for visual clarity */
-      }
-
-      /* Control the media section (image container) */
-      .dz-media {
-        flex: 1 1 auto; /* Allow it to grow but respect the card height */
-        position: relative;
-        overflow: hidden; /* Hide any overflow from the image */
-      }
-
-      /* Ensure images scale consistently */
-      .dz-media img {
-        width: 100%; /* Full width of the container */
-        height: 250px; /* Fixed height for images - adjust as needed */
-        object-fit: cover; /* Scale image to cover the area, cropping if necessary */
-        display: block; /* Remove any default spacing */
-      }
-
-      /* Style the content section */
-      .dz-content {
-        padding: 15px;
-        flex: 0 0 auto; /* Fixed height for content */
-        text-align: center; /* Optional: center-align text */
-      }
-
-      /* Adjust the meta overlay if needed */
-      .shop-meta {
-        position: absolute;
-        bottom: 10px;
-        width: 100%;
-        text-align: center;
-      }
-
-      /* Optional: Responsive adjustments */
-      @media (max-width: 768px) {
-        .shop-card {
-          height: 350px; /* Smaller height for tablets */
-        }
-        .dz-media img {
-          height: 200px;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .shop-card {
-          height: 300px; /* Even smaller for mobile */
-        }
-        .dz-media img {
-          height: 150px;
-        }
-      }
-    </style>
-
-    <div
-      class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-12"
-      *ngFor="let pack of listePack"
-    >
-      <div
-        class="shop-card style-1 hover-aware wow fadeInUp"
-        data-wow-delay="0.6s"
-      >
-        <div class="dz-media">
-          <img src="{{ pack.image }}" alt="{{ pack.nom }}" />
-          <div class="shop-meta">
-            <ul>
-              <li><a href="javascript:void(0)">Quick View</a></li>
-              <li>
-                <a href="javascript:void(0)"
-                  ><i class="yith-wcwl-icon fa fa-heart"></i
-                ></a>
-              </li>
-              <li>
-                <a href="javascript:void(0)"
-                  ><i class="fa-solid fa-cart-shopping"></i
-                ></a>
-              </li>
-            </ul>
-          </div>
-          <div class="effect"></div>
-        </div>
-        <div class="dz-content">
-          <h4 class="title">
-            <a href="product-detail.html">{{ pack.nom }}</a>
-          </h4>
-          <p>
-            <span class="font-weight-600">{{ pack.prix }}</span> -
-            <del>$45</del>
-          </p>
-        </div>
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section">
+  <header class="fc-page-heading">
+    <h1>Abonnements</h1>
+    <p>Comparez les offres des salles. Chaque abonnement couvre une période de 30 jours.</p>
+  </header>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement des abonnements…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="load()"></app-page-state>
+    <ng-container *ngIf="data.value as items">
+      <div class="fc-filter" *ngIf="items.length">
+        <label class="fc-field">
+          Rechercher un abonnement
+          <input type="search" [(ngModel)]="query" (ngModelChange)="page = 1" placeholder="Nom du pack ou de la salle" />
+        </label>
+        <label class="fc-field">
+          Activité
+          <select [(ngModel)]="category" (ngModelChange)="page = 1">
+            <option value="">Toutes les activités</option>
+            <option *ngFor="let name of categories(items)" [value]="name">{{ name }}</option>
+          </select>
+        </label>
+        <button *ngIf="query || category" class="fc-button fc-button-outline" type="button" (click)="query = ''; category = ''; page = 1">Effacer les filtres</button>
       </div>
-    </div>
-  </head>
-  <body id="bg" class="data-typography-1">
-    <div class="page-wraper">
-      <!-- Header -->
-      <app-header></app-header>
-      <!-- Header -->
-
-      <div class="page-content bg-white">
-        <!-- Our Shop -->
-        <section class="content-inner">
-          <div class="container">
-            <div class="row">
-              <div class="col-xl-8 col-lg-12 m-b30">
-                <div class="row">
-                  <div
-                    class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-12"
-                    *ngFor="let pack of listePack"
-                  >
-                    <div
-                      class="shop-card style-1 hover-aware wow fadeInUp"
-                      data-wow-delay="0.6s"
-                    >
-                      <div class="dz-media">
-                        <img src="{{ pack.image }}" alt="{{ pack.nom }}" />
-                        <div class="shop-meta">
-                          <ul>
-                            <li>
-                              <a href="/detail/{{ pack.id }}">voir détails</a>
-                            </li>
-                          </ul>
-                        </div>
-                        <div class="effect"></div>
-                      </div>
-                      <div class="dz-content">
-                        <h4 class="title">
-                          <a href="product-detail.html">{{ pack.nom }}</a>
-                        </h4>
-                        <p>
-                          <span class="font-weight-600"
-                            >{{ pack.prix }}d /mois</span
-                          >
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row page wow fadeInUp" data-wow-delay="2.4s">
-                  <div class="col-sm-6 m-b15">
-                    <p class="page-text">Showing 1–5 Of 50 Results</p>
-                  </div>
-                  <div class="col-sm-6 m-b15">
-                    <nav aria-label="Shop Pagination">
-                      <ul class="pagination style-1">
-                        <li class="page-item">
-                          <a class="page-link prev" href="javascript:void(0);"
-                            >Prev</a
-                          >
-                        </li>
-                        <li class="page-item">
-                          <a class="page-link active" href="javascript:void(0);"
-                            >1</a
-                          >
-                        </li>
-                        <li class="page-item">
-                          <a class="page-link" href="javascript:void(0);">2</a>
-                        </li>
-                        <li class="page-item">
-                          <a class="page-link" href="javascript:void(0);">3</a>
-                        </li>
-                        <li class="page-item">
-                          <a class="page-link next" href="javascript:void(0);"
-                            >Next</a
-                          >
-                        </li>
-                      </ul>
-                    </nav>
-                  </div>
-                </div>
+      <ng-container *ngIf="results(items) as matches">
+        <p *ngIf="items.length" class="fc-result-count fc-muted" aria-live="polite">{{ matches.length }} {{ matches.length === 1 ? 'résultat' : 'résultats' }}</p>
+        <app-page-state *ngIf="!matches.length" [message]="items.length ? 'Aucun résultat pour cette recherche.' : 'Aucune offre disponible pour le moment.'"></app-page-state>
+        <div class="fc-grid" *ngIf="matches.length">
+          <article class="fc-card fc-result-card" *ngFor="let item of matches | paginate: { itemsPerPage: 12, currentPage: page }">
+            <img *ngIf="item.image; else placeholder" class="fc-card-image" [src]="item.image" alt="" loading="lazy" />
+            <ng-template #placeholder><div class="fc-card-placeholder" aria-hidden="true">A</div></ng-template>
+            <div class="fc-card-body">
+              <h2>{{ item.nom }}</h2>
+              <div class="fc-muted">
+                <p *ngIf="item.salle?.nom">{{ item.salle?.nom }}</p>
+                <p *ngIf="item.prix != null">{{ item.prix | number : '1.0-2' : 'fr' }} / 30 jours</p>
               </div>
-              <div class="col-xl-4 col-lg-12">
-                <div class="shop-filter side-bar sticky-top">
-                  <aside>
-                    <div class="search-bx wow fadeInUp" data-wow-delay="0.2s">
-                      <form role="search" method="post">
-                        <div class="input-group">
-                          <div class="input-side">
-                            <input
-                              name="text"
-                              class="form-control"
-                              placeholder="Search..."
-                              type="text"
-                            />
-                            <div class="input-group-btn">
-                              <button type="submit" class="btn">
-                                <i class="flaticon-magnifying-glass"></i>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-
-                    <div class="widget widget_categories">
-                      <div
-                        class="widget-title wow fadeInUp"
-                        data-wow-delay="0.8s"
-                      >
-                        <h4 class="title">Category</h4>
-                      </div>
-                      <ul class="wow fadeInUp" data-wow-delay="1.0s">
-                        <li class="cat-item cat-item-26">
-                          <a href="javascript:void(0);">Accessories</a>(15)
-                        </li>
-                        <li class="cat-item cat-item-36">
-                          <a href="javascript:void(0);">Casual</a>(20)
-                        </li>
-                        <li class="cat-item cat-item-43">
-                          <a href="javascript:void(0);">Design</a>(10)
-                        </li>
-                        <li class="cat-item cat-item-27">
-                          <a href="javascript:void(0);">Everyday</a>(7)
-                        </li>
-                        <li class="cat-item cat-item-40">
-                          <a href="javascript:void(0);">Fitness</a>(3)
-                        </li>
-                        <li class="cat-item cat-item-40">
-                          <a href="javascript:void(0);">Hoodies</a>(8)
-                        </li>
-                        <li class="cat-item cat-item-40">
-                          <a href="javascript:void(0);">Shoes</a>(5)
-                        </li>
-                        <li class="cat-item cat-item-40">
-                          <a href="javascript:void(0);">Sport</a>(2)
-                        </li>
-                      </ul>
-                    </div>
-                  </aside>
-                </div>
-              </div>
+              <a *ngIf="item.id" class="fc-button fc-button-outline" [routerLink]="['/detail', item.id]" [attr.aria-label]="'Voir l’offre : ' + (item.nom)">Voir l’offre</a>
             </div>
-          </div>
-        </section>
-        <!-- Our Shop-->
-      </div>
-
-      <!-- Footer -->
-      <app-footer></app-footer>
-      <!-- Footer End -->
-
-      <div class="scroltop-progress scroltop-primary active-progress">
-        <svg width="100%" height="100%" viewBox="-1 -1 102 102">
-          <path
-            d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"
-            style="
-              transition: stroke-dashoffset 10ms linear 0s;
-              stroke-dasharray: 307.919, 307.919;
-              stroke-dashoffset: 24.3299px;
-            "
-          ></path>
-        </svg>
-      </div>
-    </div>
-  </body>
-
-  <!-- Mirrored from powerzone.dexignzone.com/xhtml/shop.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:45 GMT -->
-</html>
+          </article>
+        </div>
+        <pagination-controls *ngIf="matches.length > 12" (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant" screenReaderPaginationLabel="Pagination" screenReaderPageLabel="Page" screenReaderCurrentLabel="Page actuelle"></pagination-controls>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</main>
+<app-footer></app-footer>

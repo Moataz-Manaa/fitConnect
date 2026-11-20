@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Admin } from '../Entity/Admin.Entity';
 import { Observable } from 'rxjs';
-import { JwtHelperService } from '@auth0/angular-jwt';
+import { adminSession } from './session';
 import { Contact } from '../Entity/Contact.Entity';
 import { Client } from '../Entity/Client.Entity';
 import { SalleDeSport } from '../Entity/SalleDeSport.Entity';
@@ -10,13 +10,23 @@ import { Coach } from '../Entity/Coach.Entity';
 import { Category } from '../Entity/Category.Entity';
 import { Pack } from '../Entity/Pack.Entity';
 
+interface AccountCounts {
+  active: number;
+  inactive: number;
+}
+
+export interface AdminOverview {
+  admins: number;
+  clients: number;
+  coaches: AccountCounts;
+  gyms: AccountCounts;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class CrudService {
-  helper = new JwtHelperService();
-  apiUrl = 'http://localhost:8081/api';
-  loginUserUrl = 'http://localhost:8081/api/admin/login';
+  private readonly apiUrl = '/api';
   constructor(private http: HttpClient) {}
 
   addadmin(admin: Admin) {
@@ -33,11 +43,15 @@ export class CrudService {
   }
 
   loginAdmin(admin: Admin) {
-    return this.http.post<any>(this.loginUserUrl, admin);
+    return this.http.post<{ token: string; role: string }>(`${this.apiUrl}/admin/login`, admin);
+  }
+
+  getOverview(): Observable<AdminOverview> {
+    return this.http.get<AdminOverview>(`${this.apiUrl}/admin/overview`);
   }
 
   findAdminById(id: number): Observable<Admin> {
-    const url = `${this.apiUrl + '/admin'}/${id};`;
+    const url = `${this.apiUrl}/admin/${id}`;
     return this.http.get<Admin>(url);
   }
 
@@ -47,9 +61,7 @@ export class CrudService {
   }
 
   userDetails() {
-    let token: any = localStorage.getItem('myToken');
-    let decodeToken = this.helper.decodeToken(token);
-    return decodeToken.data;
+    return adminSession()?.claims.data ?? null;
   }
 
   addContact(contact: Contact) {
@@ -91,9 +103,8 @@ export class CrudService {
     return this.http.delete(url);
   }
 
-  updateSalleDeSport(salle: SalleDeSport, id: number) {
-    const url = ` ${this.apiUrl + '/salleDeSport'}/${id}`;
-    return this.http.put<any>(url, salle);
+  updateSalleDeSport(salle: Pick<SalleDeSport, 'etat'>, id: number) {
+    return this.http.put<SalleDeSport>(`${this.apiUrl}/salleDeSport/${id}`, salle);
   }
 
   addCoach(coach: Coach) {
@@ -109,9 +120,8 @@ export class CrudService {
     return this.http.delete(url);
   }
 
-  updateCoach(coach: Coach, id: number) {
-    const url = ` ${this.apiUrl + '/coach'}/${id}`;
-    return this.http.put<any>(url, coach);
+  updateCoach(coach: Pick<Coach, 'etat'>, id: number) {
+    return this.http.put<Coach>(`${this.apiUrl}/coach/${id}`, coach);
   }
 
   addCategory(category: Category) {
@@ -127,14 +137,8 @@ export class CrudService {
     return this.http.delete(url);
   }
 
-  isLoggedIn() {
-    let token = localStorage.getItem('myToken');
-
-    if (token) {
-      return true;
-    } else {
-      return false;
-    }
+  isLoggedIn(): boolean {
+    return adminSession() !== null;
   }
 
   getPack(): Observable<Pack[]> {

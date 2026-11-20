@@ -1,0 +1,78 @@
+<section class="adm-panel" [attr.aria-label]="title" [attr.aria-busy]="loading || saving">
+  <div *ngIf="rows.length && !loadError" class="adm-toolbar">
+    <label>Rechercher dans la liste
+      <input type="search" [(ngModel)]="query" [disabled]="saving" (ngModelChange)="pending = undefined; applyFilters()" />
+    </label>
+    <label *ngIf="statusColumn">{{ statusColumn }}
+      <select [(ngModel)]="status" [disabled]="saving" (ngModelChange)="pending = undefined; applyFilters()">
+        <option value="">Tous</option>
+        <option *ngIf="status && !statuses.includes(status)" [value]="status">{{ status }}</option>
+        <option *ngFor="let option of statuses" [value]="option">{{ option }}</option>
+      </select>
+    </label>
+    <button *ngIf="query || status" class="adm-button adm-secondary" type="button" [disabled]="saving"
+      (click)="query = ''; status = ''; pending = undefined; applyFilters()">Effacer les filtres</button>
+  </div>
+
+  <p *ngIf="loading" class="adm-notice" role="status">Chargement…</p>
+  <p *ngIf="message" class="adm-notice adm-success" role="status">{{ message }}</p>
+  <div *ngIf="loadError" class="adm-notice adm-error" role="alert">
+    {{ loadError }}
+    <button class="adm-button adm-secondary" type="button" (click)="reload()">Réessayer</button>
+  </div>
+  <ng-container *ngIf="!loading && !loadError">
+    <p *ngIf="!matches.length" class="adm-notice" role="status">
+      {{ rows.length ? 'Aucun résultat pour les filtres sélectionnés.' : 'Aucun élément à afficher.' }}
+    </p>
+    <p *ngIf="matches.length" class="adm-muted adm-count" aria-live="polite">
+      {{ matches.length }} {{ matches.length === 1 ? 'résultat' : 'résultats' }}
+    </p>
+    <div *ngIf="matches.length" class="adm-table-scroll" role="region" [attr.aria-label]="title" tabindex="0">
+      <table>
+        <caption class="adm-sr-only">{{ title }}</caption>
+        <thead>
+          <tr>
+            <th *ngFor="let column of columns" scope="col">{{ column }}</th>
+            <th *ngIf="statusColumn" scope="col">{{ statusColumn }}</th>
+            <th *ngIf="hasActions" scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let row of matches | paginate: { itemsPerPage: 10, currentPage: page }">
+            <tr>
+              <td *ngFor="let value of row.cells">{{ value ?? '—' }}</td>
+              <td *ngIf="statusColumn">
+                <span *ngIf="row.status as badge" class="adm-badge" [attr.data-tone]="badge.tone">{{ badge.label }}</span>
+              </td>
+              <td *ngIf="hasActions">
+                <div class="adm-actions">
+                  <a *ngIf="row.editLink" class="adm-button adm-secondary" [routerLink]="row.editLink"
+                    [attr.aria-label]="'Modifier la ligne ' + row.id">Modifier</a>
+                  <button *ngFor="let action of row.actions" class="adm-button adm-secondary" type="button"
+                    [class.adm-danger-text]="action.destructive" [disabled]="saving || actionsDisabled"
+                    [attr.aria-label]="action.label + ', ligne ' + row.id" (click)="selectAction(row, action)">{{ action.label }}</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="pending?.row === row">
+              <td [attr.colspan]="columns.length + (statusColumn ? 1 : 0) + (hasActions ? 1 : 0)">
+                <div class="adm-confirm">
+                  <p role="status">{{ pending?.action?.confirmation }}</p>
+                  <div class="adm-actions">
+                    <button class="adm-button" [class.adm-danger]="pending?.action?.destructive" [disabled]="saving || actionsDisabled"
+                      type="button" (click)="confirmAction()">{{ saving ? 'En cours…' : 'Confirmer' }}</button>
+                    <button class="adm-button adm-secondary" [disabled]="saving" type="button" (click)="pending = undefined">Annuler</button>
+                  </div>
+                  <p *ngIf="actionError" class="adm-notice adm-error" role="alert">{{ actionError }}</p>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <pagination-controls *ngIf="matches.length > 10 && !saving" (pageChange)="page = $event; pending = undefined"
+      previousLabel="Précédent" nextLabel="Suivant" screenReaderPaginationLabel="Pagination"
+      screenReaderPageLabel="Page" screenReaderCurrentLabel="Page actuelle"></pagination-controls>
+  </ng-container>
+</section>

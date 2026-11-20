@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/customer/customer.spec.ts",
+    "src/app/management/management.spec.ts",
+    "src/app/service/crud.service.spec.ts",
+    "src/app/service/checkout.service.spec.ts",
+    "src/app/payment/payment.component.spec.ts",
+    "src/app/revenue/revenue.component.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

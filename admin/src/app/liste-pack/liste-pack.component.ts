@@ -1,23 +1,20 @@
 import { Component } from '@angular/core';
-import { Pack } from '../Entity/Pack.Entity';
+import { Observable, map } from 'rxjs';
+import { TableRow } from '../management/management-table.component';
 import { CrudService } from '../service/crud.service';
-import { Router } from '@angular/router';
 
-@Component({
-  selector: 'app-liste-pack',
-  templateUrl: './liste-pack.component.html',
-  styleUrls: ['./liste-pack.component.css'],
-})
+@Component({ selector: 'app-liste-pack', templateUrl: './liste-pack.component.html' })
 export class ListePackComponent {
-  p: number = 1;
-  collection: any[];
-  listePack: Pack[];
+  constructor(private service: CrudService) {}
 
-  constructor(private service: CrudService, private router: Router) {}
-
-  ngOnInit(): void {
-    this.service.getPack().subscribe((pack) => {
-      this.listePack = pack;
-    });
-  }
+  readonly loadRows = (): Observable<TableRow[]> => this.service.getPack().pipe(map(items =>
+    (items ?? []).flatMap(row => {
+      const id = row?.id;
+      if (id == null) return [];
+      return [{
+        id,
+        cells: [id, row.nom, row.description, row.prix, row.category?.nom, row.salle?.nom],
+      }];
+    })
+  ));
 }

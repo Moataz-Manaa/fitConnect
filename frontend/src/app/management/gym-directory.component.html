@@ -1,0 +1,50 @@
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section">
+  <header class="fc-page-heading"><h1>{{ isPacks ? 'Mes packs' : 'Équipe de la salle' }}</h1></header>
+  <app-workspace-nav role="salle"></app-workspace-nav>
+  <p *ngIf="success" class="fc-form-note fc-workspace-feedback" role="status">{{ success }}</p>
+  <div class="fc-filter">
+    <label class="fc-field">{{ isPacks ? 'Rechercher un pack' : 'Rechercher un coach' }}
+      <input type="search" [(ngModel)]="query" [disabled]="deleting" (ngModelChange)="page = 1; pendingId = undefined" />
+    </label>
+    <a class="fc-button fc-button-primary" [routerLink]="isPacks ? '/ajouterPack' : '/ajouter-coach'">{{ isPacks ? 'Ajouter un pack' : 'Ajouter un coach' }}</a>
+  </div>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="load()"></app-page-state>
+    <ng-container *ngIf="data.value as items">
+      <ng-container *ngIf="search(items) as results">
+        <app-page-state *ngIf="!results.length" [message]="items.length ? 'Aucun résultat pour cette recherche.' : isPacks ? 'Vous n’avez pas encore de pack.' : 'Vous n’avez pas encore ajouté de coach.'"></app-page-state>
+        <div class="fc-grid" *ngIf="results.length">
+          <article class="fc-card fc-result-card" *ngFor="let item of results | paginate: { itemsPerPage: 9, currentPage: page }">
+            <img *ngIf="item.image" class="fc-card-image" [src]="item.image" alt="" loading="lazy" />
+            <div class="fc-card-body">
+              <h2>{{ item.name }}</h2>
+              <p class="fc-muted" *ngIf="item.detail">{{ item.detail }}</p>
+              <p *ngIf="item.description">{{ item.description }}</p>
+              <p *ngIf="item.price != null"><strong>{{ item.price | number : '1.2-2' : 'fr' }}</strong> / 30 jours</p>
+              <div class="fc-actions fc-directory-actions">
+                <a class="fc-button fc-button-outline" [routerLink]="[isPacks ? '/edit-pack' : '/edit-coch', item.id]"
+                  [attr.aria-label]="'Modifier ' + item.name">Modifier</a>
+                <button class="fc-button fc-button-outline fc-danger-text" type="button" [disabled]="deleting"
+                  [attr.aria-label]="'Supprimer ' + item.name" (click)="pendingId = item.id; actionError = ''; success = ''">Supprimer</button>
+              </div>
+              <div *ngIf="pendingId === item.id" class="fc-list" [attr.aria-busy]="deleting">
+                <p role="status">Supprimer « {{ item.name }} » ? Cette action est définitive.</p>
+                <div class="fc-actions">
+                  <button class="fc-button fc-danger" type="button" [disabled]="deleting" (click)="deleteItem(item)">{{ deleting ? 'Suppression…' : 'Confirmer' }}</button>
+                  <button class="fc-button fc-button-outline" type="button" [disabled]="deleting" (click)="pendingId = undefined">Annuler</button>
+                </div>
+                <app-page-state *ngIf="actionError" kind="error" [message]="actionError"></app-page-state>
+              </div>
+            </div>
+          </article>
+        </div>
+        <pagination-controls *ngIf="results.length > 9 && !deleting" (pageChange)="page = $event; pendingId = undefined"
+          (pageBoundsCorrection)="page = $event" previousLabel="Précédent" nextLabel="Suivant" screenReaderPaginationLabel="Pagination"
+          screenReaderPageLabel="Page" screenReaderCurrentLabel="Page actuelle"></pagination-controls>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</main>
+<app-footer></app-footer>

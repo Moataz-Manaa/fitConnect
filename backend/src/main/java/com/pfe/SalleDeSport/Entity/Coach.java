@@ -1,5 +1,6 @@
 package com.pfe.SalleDeSport.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,6 +11,7 @@ public class Coach {
     private String nom;
     private String prenom;
     private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String mp;
     private String telephone;
     @Lob

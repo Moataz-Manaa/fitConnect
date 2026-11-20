@@ -1,132 +1,27 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { Coach } from '../Entity/Coach.Entity';
+import { Observable, map } from 'rxjs';
+import { activationAction, deleteAction } from '../management/management-actions';
+import { accountStatus, TableRow } from '../management/management-table.component';
 import { CrudService } from '../service/crud.service';
-import Swal from 'sweetalert2';
 
-@Component({
-  selector: 'app-liste-coach',
-  templateUrl: './liste-coach.component.html',
-  styleUrls: ['./liste-coach.component.css'],
-})
+@Component({ selector: 'app-liste-coach', templateUrl: './liste-coach.component.html' })
 export class ListeCoachComponent {
-  p: number = 1;
-  collection: any[];
-  listeCoach: Coach[];
+  constructor(private service: CrudService) {}
 
-  constructor(private service: CrudService, private router: Router) {}
-
-  ngOnInit(): void {
-    this.service.getCoach().subscribe((coach) => {
-      this.listeCoach = coach;
-    });
-  }
-
-  DeleteCoach(coach: Coach) {
-    if (
-      confirm(
-        "Voulez vous supprimer ce message de coach avec l'ID " + coach.id + '?'
-      )
-    ) {
-      this.service.onDeleteCoach(coach.id).subscribe(() => {
-        this.router.navigate(['/listeCoach']).then(() => {
-          window.location.reload();
-        });
-      });
-    }
-  }
-  /*
-  updateCoach(coach: Coach) {
-    let index = this.listeCoach.indexOf(coach);
-    if (coach.etat == true) {
-      let newCoach = new Coach(
-        coach.id,
-        coach.nom,
-        coach.prenom,
-        coach.email,
-        coach.mp,
-        coach.telephone,
-        false
-      );
-      this.service.updateCoach(newCoach, coach.id).subscribe(
-        (res) => {
-          console.log(res);
-          this.listeCoach[index] = newCoach;
-        },
-        (err) => console.log(err)
-      );
-    } else {
-      let newCoach = new Coach(
-        coach.id,
-        coach.nom,
-        coach.prenom,
-        coach.email,
-        coach.mp,
-        coach.telephone,
-        true
-      );
-      this.service.updateCoach(newCoach, coach.id).subscribe(
-        (res) => {
-          console.log(res);
-          this.listeCoach[index] = newCoach;
-        },
-        (err) => console.log(err)
-      );
-    }
-  }*/
-
-  updateCoach(coach: Coach) {
-    console.log(coach);
-
-    let index = this.listeCoach.indexOf(coach);
-    if (coach.etat == true) {
-      let newCoach = new Coach(
-        coach.id,
-        coach.nom,
-        coach.prenom,
-        coach.email,
-        coach.mp,
-        coach.telephone,
-        false
-      );
-      this.service.updateCoach(newCoach, coach.id).subscribe(
-        (res) => {
-          console.log(res);
-          this.listeCoach[index] = newCoach;
-          Swal.fire({
-            icon: 'error',
-            title: 'Compte désactivé',
-            text: 'Le compte a été désactivé avec succès.',
-            showConfirmButton: false,
-            timer: 3000,
-          });
-        },
-        (err) => console.log(err)
-      );
-    } else {
-      let newCoach = new Coach(
-        coach.id,
-        coach.nom,
-        coach.prenom,
-        coach.email,
-        coach.mp,
-        coach.telephone,
-        true
-      );
-      this.service.updateCoach(newCoach, coach.id).subscribe(
-        (res) => {
-          console.log(res);
-          this.listeCoach[index] = newCoach;
-          Swal.fire({
-            title: 'Succès !',
-            text: 'Le compte de coach a été activé avec succès.',
-            icon: 'success',
-            showConfirmButton: false,
-            timer: 3000,
-          });
-        },
-        (err) => console.log(err)
-      );
-    }
-  }
+  readonly loadRows = (): Observable<TableRow[]> => this.service.getCoach().pipe(map(items =>
+    (items ?? []).flatMap(row => {
+      const id = row?.id;
+      if (id == null) return [];
+      const label = [row.prenom, row.nom].filter(Boolean).join(' ') || row.email || String(id);
+      return [{
+        id,
+        cells: [id, row.nom, row.prenom, row.email, row.telephone],
+        status: accountStatus(row.etat),
+        actions: [
+          activationAction(label, row.etat === true, etat => this.service.updateCoach({ etat }, id)),
+          deleteAction(label, () => this.service.onDeleteCoach(id)),
+        ],
+      }];
+    })
+  ));
 }

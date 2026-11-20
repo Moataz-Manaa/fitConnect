@@ -1,140 +1,48 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Observable, finalize, map, switchMap } from 'rxjs';
+import { Pack } from '../Entity/Pack.Entity';
+import { localDateInput } from '../customer/customer-booking';
+import { CustomerData, customerData } from '../customer/customer-data';
+import { CheckoutService, checkoutErrorMessage } from '../service/checkout.service';
 import { CrudService } from '../service/crud.service';
+import { activeSession } from '../service/session';
 
-@Component({
-  selector: 'app-pack-detail',
-  templateUrl: './pack-detail.component.html',
-  styleUrls: ['./pack-detail.component.css'],
-})
-export class PackDetailComponent {
-  messageCommande: string = '';
-  pack: any = {};
-  paymentHandler: any = null;
-  dateActivation: string | null = null; // Store dateActivation as string (from input)
+@Component({ selector: 'app-pack-detail', templateUrl: './pack-detail.component.html' })
+export class PackDetailComponent implements OnInit {
+  data$!: Observable<CustomerData<Pack | null>>;
+  dateActivation = '';
+  checkoutPending = false;
+  checkoutError = '';
 
-  constructor(
-    private service: CrudService,
-    private router: Router,
-    private activateRoute: ActivatedRoute
-  ) {}
+  constructor(private service: CrudService, private checkout: CheckoutService, private route: ActivatedRoute) {}
 
-  ngOnInit() {
-    this.getPack();
-    this.invokeStripe(); // Initialize Stripe
+  get isMember(): boolean { return activeSession()?.role === 'client'; }
+  get today(): string { return localDateInput(); }
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.data$ = this.route.paramMap.pipe(switchMap(params => {
+      this.dateActivation = '';
+      this.checkoutError = '';
+      const pack = this.service.getPackByIdApi(Number(params.get('id'))).pipe(
+        map(offer => offer?.id && offer.salle?.etat !== false ? offer : null)
+      );
+      return customerData(pack, 'Impossible de charger cet abonnement.');
+    }));
   }
 
-  getPack() {
-    let id = this.activateRoute.snapshot.params['id'];
-    this.service.getPackByIdApi(id).subscribe((data: any) => {
-      this.pack = data;
-      console.log(data);
-    });
-  }
-
-  invokeStripe() {
-    if (!window.document.getElementById('stripe-script')) {
-      const script = window.document.createElement('script');
-      script.id = 'stripe-script';
-      script.type = 'text/javascript';
-      script.src = 'https://checkout.stripe.com/checkout.js';
-      script.onload = () => {
-        this.paymentHandler = (<any>window).StripeCheckout.configure({
-          key: 'pk_test_51ORfw8CGCz5RXlZeoe3XDe37HmmqpZVdoHzeTdv6BwUbc2FN7TshEC3TQJeGrDQPE1oBRYJHeXUPDPqoUvwRZsAb00g0HXBiwp',
-          locale: 'auto',
-          token: (stripeToken: any) => {
-            console.log('Stripe Token:', stripeToken);
-            this.handlePaymentSuccess(stripeToken); // Process reservation after payment
-          },
-        });
-      };
-      window.document.body.appendChild(script);
-    }
-  }
-
-  // Optional: Validate or log date change
-  onDateChange() {
-    if (this.dateActivation) {
-      const selectedDate = new Date(this.dateActivation);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize to midnight
-      if (selectedDate < today) {
-        this.messageCommande = `<div class="alert alert-warning" role="alert">
-        La date d'activation ne peut pas être dans le passé.
-      </div>`;
-        this.dateActivation = null; // Reset invalid date
-        setTimeout(() => {
-          this.messageCommande = '';
-        }, 3000);
-      } else {
-        console.log('Selected Activation Date:', this.dateActivation);
-      }
-    }
-  }
-  reserver(event: any) {
-    this.messageCommande = `<div class="alert alert-primary" role="alert">
-      Veuillez patienter ...
-    </div>`;
-
-    // Validate dateActivation
-    if (!this.dateActivation) {
-      this.messageCommande = `<div class="alert alert-warning" role="alert">
-        Veuillez sélectionner une date d'activation.
-      </div>`;
-      setTimeout(() => {
-        this.messageCommande = '';
-      }, 3000);
+  startCheckout(packId?: number): void {
+    if (!packId || !this.isMember || this.checkoutPending) return;
+    if (!this.dateActivation || this.dateActivation < this.today) {
+      this.checkoutError = 'Choisissez une date d’activation à partir d’aujourd’hui.';
       return;
     }
-
-    // Open Stripe Checkout
-    if (this.paymentHandler) {
-      this.paymentHandler.open({
-        name: this.pack.nom,
-        description: this.pack.description,
-        amount: this.pack.prix * 100, // Convert to cents for Stripe
-        currency: 'usd', // Adjust currency as needed
-      });
-    } else {
-      this.messageCommande = `<div class="alert alert-warning" role="alert">
-        Erreur: Stripe non initialisé. Veuillez réessayer.
-      </div>`;
-      setTimeout(() => {
-        this.messageCommande = '';
-      }, 3000);
-    }
-  }
-
-  handlePaymentSuccess(stripeToken: any) {
-    const rq: any = {
-      idClient: this.service.userDetails()?.id,
-      idPack: this.pack.id,
-      paymentDate: new Date(), // Set payment date
-      prix: this.pack.prix, // Include the pack's prix
-      dateActivation: this.dateActivation
-        ? new Date(this.dateActivation)
-        : new Date(), // Include dateActivation
-    };
-
-    console.log('Reservation Request:', rq);
-
-    this.service.reserverFromApi(rq).subscribe(
-      (data: any) => {
-        const id = data.id;
-        this.messageCommande = `<div class="alert alert-success" role="alert">
-          Réservé avec succès! Paiement effectué.
-        </div>`;
-        this.router.navigate([`/facture/${id}`]);
-      },
-      (err) => {
-        this.messageCommande = `<div class="alert alert-warning" role="alert">
-          Erreur lors de la réservation. Veuillez réessayer.
-        </div>`;
-      }
-    );
-
-    setTimeout(() => {
-      this.messageCommande = '';
-    }, 3000);
+    this.checkoutError = '';
+    this.checkoutPending = true;
+    this.checkout.start('PACK', packId, this.dateActivation).pipe(
+      finalize(() => this.checkoutPending = false)
+    ).subscribe({ error: error => this.checkoutError = checkoutErrorMessage(error) });
   }
 }

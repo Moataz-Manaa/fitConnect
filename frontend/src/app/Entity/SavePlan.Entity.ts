@@ -1,7 +1,7 @@
 export class SavePlan {
   constructor(
     public id?: number,
-    public date?: Date,
+    public date?: Date | string,
     public debut?: string,
     public fin?: string,
     public description?: string,

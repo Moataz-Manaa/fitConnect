@@ -1,6 +1,9 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { SessionInterceptor } from './service/session.interceptor';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -14,8 +17,7 @@ import { RegisterSalleDeSportComponent } from './register-salle-de-sport/registe
 import { LoginSalleDeSportComponent } from './login-salle-de-sport/login-salle-de-sport.component';
 import { LoginCoachComponent } from './login-coach/login-coach.component';
 import { RegisterCoachComponent } from './register-coach/register-coach.component';
-import { HeaderComponent } from './header/header.component';
-import { FooterComponent } from './footer/footer.component';
+import { LayoutModule } from './layout.module';
 import { AjouterPackComponent } from './ajouter-pack/ajouter-pack.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { BmiComponent } from './bmi/bmi.component';
@@ -39,13 +41,11 @@ import { CoachComponent } from './coach/coach.component';
 import { CoachDetailComponent } from './coach-detail/coach-detail.component';
 import { PlanComponent } from './plan/plan.component';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
-import { NgChartsModule } from 'ng2-charts';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { CalendarComponent } from './calendar/calendar.component';
 import { VideoCallComponent } from './video-call/video-call.component';
 import { SalleClientsComponent } from './salle-clients/salle-clients.component';
 import { CoachClientsComponent } from './coach-clients/coach-clients.component';
-import { RevenueComponent } from './revenue/revenue.component';
 import { EnTantQueComponent } from './en-tant-que/en-tant-que.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { SeanceClientComponent } from './seance-client/seance-client.component';
@@ -53,6 +53,13 @@ import { ListeReservationClientComponent } from './liste-reservation-client/list
 import { ListeAbonnementClientComponent } from './liste-abonnement-client/liste-abonnement-client.component';
 import { ListeReservationCoachComponent } from './liste-reservation-coach/liste-reservation-coach.component';
 import { PlanningSalleComponent } from './planning-salle/planning-salle.component';
+
+import { PageStateComponent } from './customer/page-state.component';
+import { WorkspaceNavComponent } from './management/workspace-nav.component';
+import { GymDirectoryComponent } from './management/gym-directory.component';
+import { WorkspaceImageComponent } from './management/workspace-image.component';
+
+registerLocaleData(localeFr);
 
 @NgModule({
   declarations: [
@@ -66,8 +73,6 @@ import { PlanningSalleComponent } from './planning-salle/planning-salle.componen
     LoginSalleDeSportComponent,
     LoginCoachComponent,
     RegisterCoachComponent,
-    HeaderComponent,
-    FooterComponent,
     AjouterPackComponent,
     ResetPasswordComponent,
     BmiComponent,
@@ -89,7 +94,6 @@ import { PlanningSalleComponent } from './planning-salle/planning-salle.componen
     VideoCallComponent,
     SalleClientsComponent,
     CoachClientsComponent,
-    RevenueComponent,
     EnTantQueComponent,
     SeanceClientComponent,
     ListeReservationClientComponent,
@@ -105,13 +109,18 @@ import { PlanningSalleComponent } from './planning-salle/planning-salle.componen
     HttpClientModule,
     SocialLoginModule,
     NgxPaginationModule,
-    NgChartsModule,
+    LayoutModule,
+    PageStateComponent,
+    WorkspaceNavComponent,
+    GymDirectoryComponent,
+    WorkspaceImageComponent,
     CalendarModule.forRoot({
       provide: DateAdapter,
       useFactory: adapterFactory,
     }),
   ],
   providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: SessionInterceptor, multi: true },
     {
       provide: 'SocialAuthServiceConfig',
       useValue: {

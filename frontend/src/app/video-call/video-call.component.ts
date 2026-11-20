@@ -1,19 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import type { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { CrudService } from '../service/crud.service';
-import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 
 @Component({
   selector: 'app-video-call',
   templateUrl: './video-call.component.html',
   styleUrls: ['./video-call.component.css'],
 })
-export class VideoCallComponent implements OnInit {
-  IsCoachIn: boolean = false;
-  IsClientIn: boolean = false;
-  planningId: string = '';
-  roomId: string = '';
-  userInfo: any = null;
+export class VideoCallComponent implements OnInit, OnDestroy {
+  @ViewChild('videoContainer', { static: true }) private container!: ElementRef<HTMLDivElement>;
+  status = '';
+  private routeSubscription?: Subscription;
+  private room?: ZegoUIKitPrebuilt;
+  private requestId = 0;
 
   constructor(
     private service: CrudService,
@@ -22,158 +24,67 @@ export class VideoCallComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.IsCoachIn = this.service.isCoachIn();
-    this.IsClientIn = this.service.isClientIn();
-    this.userInfo = this.service.userDetails();
-
-    // Get planning ID from route parameters
-    this.route.params.subscribe((params) => {
-      this.planningId = params['planningId'] || '';
-      if (this.planningId) {
-        this.generateRoomId();
-        this.initializeZegoUIKit();
-      } else {
-        console.error('Planning ID is required for video call');
-        this.router.navigate(['/dashboard']); // Redirect if no planning ID
+    this.routeSubscription = this.route.paramMap.subscribe((params) => {
+      const requestId = ++this.requestId;
+      this.room?.destroy();
+      this.room = undefined;
+      const planningId = params.get('planningId');
+      if (!planningId || !/^[1-9][0-9]*$/.test(planningId)) {
+        this.status = 'Cette séance est introuvable.';
+        return;
       }
+
+      this.status = 'Connexion à la séance…';
+      void this.joinRoom(planningId, requestId);
     });
   }
 
-  /**
-   * Generate a consistent room ID based on planning ID
-   * This ensures coach and clients use the same room
-   */
-  generateRoomId(): void {
-    // Create a consistent room ID using planning ID
-    this.roomId = `planning_${this.planningId}_room`;
-    console.log('Generated Room ID:', this.roomId);
+  ngOnDestroy(): void {
+    ++this.requestId;
+    this.routeSubscription?.unsubscribe();
+    this.room?.destroy();
   }
 
-  /**
-   * Alternative method: Generate room ID from reservation data
-   * Use this if you want to include coach ID for extra security
-   */
-  generateRoomIdWithCoach(coachId: number): void {
-    this.roomId = `coach_${coachId}_planning_${this.planningId}`;
-    console.log('Generated Room ID with Coach:', this.roomId);
-  }
+  private async joinRoom(planningId: string, requestId: number): Promise<void> {
+    try {
+      const access = await firstValueFrom(this.service.getVideoRoomToken(planningId));
+      if (requestId !== this.requestId) return;
+      const { ZegoUIKitPrebuilt } = await import('@zegocloud/zego-uikit-prebuilt');
+      if (requestId !== this.requestId) return;
 
-  initializeZegoUIKit(): void {
-    const appID = 1354934854; // Replace with your actual ZegoCloud AppID
-    const serverSecret = '3e14bdcd62d2a05dc4bccbfc27210266'; // Replace with your actual ServerSecret
-
-    // Generate unique user ID
-    const userID = this.generateUserId();
-    const userName = this.getUserName();
-
-    console.log('Initializing video call for:', {
-      userID,
-      userName,
-      roomId: this.roomId,
-      isCoach: this.IsCoachIn,
-      isClient: this.IsClientIn,
-    });
-
-    // Generate token for the user
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      appID,
-      serverSecret,
-      this.roomId,
-      userID,
-      userName
-    );
-
-    // Create and join the room
-    const zegoUIKitPrebuilt = ZegoUIKitPrebuilt.create(kitToken);
-    zegoUIKitPrebuilt.joinRoom({
-      container: document.getElementById('zego-container') as HTMLElement,
-      scenario: {
-        mode: ZegoUIKitPrebuilt.VideoConference,
-      },
-      maxUsers: 10, // Allow multiple clients per coach
-      sharedLinks: [
-        {
-          name: 'Personal link',
-          url: `${window.location.origin}/call/${this.planningId}`,
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
+        access.appId, access.token, access.roomId, access.userId, access.userName
+      );
+      this.room = ZegoUIKitPrebuilt.create(kitToken);
+      this.room.joinRoom({
+        container: this.container.nativeElement,
+        scenario: { mode: ZegoUIKitPrebuilt.VideoConference },
+        maxUsers: 10,
+        sharedLinks: [
+          { name: 'Lien de la séance', url: `${window.location.origin}/call/${planningId}` },
+        ],
+        onLeaveRoom: () => {
+          if (requestId === this.requestId) void this.router.navigate(['/dashboard']);
         },
-      ],
-      // Add callback for user join/leave events
-      onJoinRoom: () => {
-        console.log('Successfully joined room:', this.roomId);
-      },
-      onLeaveRoom: () => {
-        console.log('Left room:', this.roomId);
-        this.router.navigate(['/dashboard']);
-      },
-    });
-  }
-
-  /**
-   * Generate unique user ID based on user type and info
-   */
-  generateUserId(): string {
-    const timestamp = Date.now();
-
-    if (this.IsCoachIn) {
-      return `coach_${this.userInfo.id}_${timestamp}`;
-    } else if (this.IsClientIn) {
-      return `client_${this.userInfo.id}_${timestamp}`;
-    } else {
-      return `user_${timestamp}`;
-    }
-  }
-
-  /**
-   * Get user display name
-   */
-  getUserName(): string {
-    if (!this.userInfo) {
-      return 'Anonymous User';
-    }
-
-    const fullName = `${this.userInfo.nom || ''} ${
-      this.userInfo.prenom || ''
-    }`.trim();
-
-    if (this.IsCoachIn) {
-      return `Coach ${fullName}`;
-    } else if (this.IsClientIn) {
-      return `Client ${fullName}`;
-    } else {
-      return fullName || 'User';
-    }
-  }
-
-  /**
-   * Check if user can join the call based on session timing
-   */
-  canJoinCall(planningDate: Date, debut: string, fin: string): boolean {
-    const today = new Date();
-    const sessionDate = new Date(planningDate);
-
-    // Parse time
-    const [debutHour, debutMinute] = debut.split(':').map(Number);
-    const [finHour, finMinute] = fin.split(':').map(Number);
-
-    const debutTime = new Date(sessionDate);
-    debutTime.setHours(debutHour, debutMinute, 0, 0);
-
-    const finTime = new Date(sessionDate);
-    finTime.setHours(finHour, finMinute, 0, 0);
-
-    // Allow joining 10 minutes before session starts and until session ends
-    const joinTime = new Date(debutTime.getTime() - 10 * 60 * 1000); // 10 minutes before
-
-    return today >= joinTime && today <= finTime;
-  }
-
-  /**
-   * Leave the call and return to dashboard
-   */
-  leaveCall(): void {
-    if (confirm("Êtes-vous sûr de vouloir quitter l'appel ?")) {
-      // The onLeaveRoom callback will handle navigation
-      window.location.reload(); // Force reload to clean up ZegoUIKit
+      });
+      this.status = '';
+    } catch (error) {
+      if (requestId !== this.requestId) return;
+      if (error instanceof HttpErrorResponse) {
+        if (error.status === 401) {
+          this.status = 'Connectez-vous pour rejoindre la séance.';
+          return;
+        }
+        if (error.status === 403) {
+          this.status = 'Vous ne pouvez pas rejoindre cette séance.';
+          return;
+        }
+        if (error.status === 503) {
+          this.status = 'Le service vidéo est indisponible.';
+          return;
+        }
+      }
+      this.status = 'Impossible de charger la séance. Veuillez réessayer.';
     }
   }
 }

@@ -1,39 +1,41 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { Admin } from '../Entity/Admin.Entity';
+import { Observable, map, tap } from 'rxjs';
+import { deleteAction } from '../management/management-actions';
+import { TableRow } from '../management/management-table.component';
 import { CrudService } from '../service/crud.service';
+import { isSuperAdmin } from '../service/session';
 
-@Component({
-  selector: 'app-liste-admin',
-  templateUrl: './liste-admin.component.html',
-  styleUrls: ['./liste-admin.component.css'],
-})
+@Component({ selector: 'app-liste-admin', templateUrl: './liste-admin.component.html' })
 export class ListeAdminComponent {
-  p: number = 1;
-  collection: any[];
-  role: String;
-  listeAdmin: Admin[];
+  readonly saveMessage = history.state?.adminSaved === 'create' ? 'Administrateur ajouté.'
+    : history.state?.adminSaved === 'edit' ? 'Administrateur mis à jour.' : '';
+
+  get canManage(): boolean { return isSuperAdmin(); }
+  get currentAdminId(): number | undefined { return this.service.userDetails()?.id; }
 
   constructor(private service: CrudService, private router: Router) {}
 
-  ngOnInit(): void {
-    this.role = localStorage.getItem('role') as string;
-    this.service.getAdmin().subscribe((admin) => {
-      this.listeAdmin = admin;
-    });
-  }
-
-  DeleteAdmin(admin: Admin) {
-    if (
-      confirm(
-        "Voulez-vous supprimer cet administrateur avec l'ID " + admin.id + '?'
-      )
-    ) {
-      this.service.onDeleteAdmin(admin.id).subscribe(() => {
-        this.router.navigate(['/listeAdmin']).then(() => {
-          window.location.reload();
-        });
-      });
-    }
-  }
+  readonly loadRows = (): Observable<TableRow[]> => this.service.getAdmin().pipe(map(items =>
+    (items ?? []).flatMap(row => {
+      const id = row?.id;
+      if (id == null) return [];
+      const label = [row.prenom, row.nom].filter(Boolean).join(' ') || row.email || String(id);
+      return [{
+        id,
+        cells: [id, row.nom, row.prenom, row.email],
+        status: { label: row.role || 'Inconnu', tone: row.role === 'Super Administrateur' ? 'attention' : 'neutral' },
+        ...(this.canManage ? {
+          editLink: ['/modifierAdmin', id],
+          actions: [deleteAction(label, () => this.service.onDeleteAdmin(id).pipe(tap(() => {
+            if (id === this.currentAdminId) {
+              localStorage.removeItem('myToken');
+              localStorage.removeItem('role');
+              void this.router.navigate(['/login'], { replaceUrl: true });
+            }
+          })))],
+        } : {}),
+      }];
+    })
+  ));
 }

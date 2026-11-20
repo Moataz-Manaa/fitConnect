@@ -1,251 +1,95 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import type { ChartData, ChartOptions } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { BehaviorSubject, Observable, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
+import { CustomerData, customerData } from '../customer/customer-data';
+import { PageStateComponent } from '../customer/page-state.component';
+import { LayoutModule } from '../layout.module';
+import { WorkspaceNavComponent } from '../management/workspace-nav.component';
 import { CrudService } from '../service/crud.service';
-import { BaseChartDirective } from 'ng2-charts';
-import { jwtDecode } from 'jwt-decode';
+import { activeSession } from '../service/session';
+
+const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+interface RevenueReport {
+  total: number;
+  monthly: { label: string; amount: number }[];
+  annual: { year: number; amount: number }[];
+  packs: { packId: number; packName: string; revenue: number }[];
+  monthlyChart: ChartData<'bar'>;
+  annualChart: ChartData<'line'>;
+  packChart: ChartData<'pie'>;
+}
 
 @Component({
   selector: 'app-revenue',
+  standalone: true,
+  imports: [CommonModule, FormsModule, LayoutModule, NgChartsModule, PageStateComponent, WorkspaceNavComponent],
   templateUrl: './revenue.component.html',
-  styleUrls: ['./revenue.component.css'],
 })
 export class RevenueComponent implements OnInit {
-  @ViewChild('barChart') barChart: BaseChartDirective | undefined;
-  @ViewChild('pieChart') pieChart: BaseChartDirective | undefined;
-  @ViewChild('lineChart') lineChart: BaseChartDirective | undefined;
-
-  salleId: number | null = null;
-  selectedYear: number = new Date().getFullYear();
-  years: number[] = [2023, 2024, 2025];
-  totalRevenue: number = 0;
-
-  // Bar Chart (Monthly Revenue)
-  public barChartType: ChartType = 'bar';
-  public barChartData: ChartData<'bar'> = {
-    labels: [
-      'Jan',
-      'Fév',
-      'Mar',
-      'Avr',
-      'Mai',
-      'Juin',
-      'Juil',
-      'Août',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Déc',
-    ],
-    datasets: [
-      {
-        data: new Array(12).fill(0),
-        label: "Chiffre d'affaires mensuel",
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-  public barChartOptions: ChartConfiguration['options'] = {
+  selectedYear = new Date().getFullYear();
+  readonly years = Array.from({ length: Math.max(1, this.selectedYear - 2023 + 1) }, (_, index) => this.selectedYear - index);
+  readonly trendOptions: ChartOptions<'bar' | 'line'> = {
     responsive: true,
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: "Chiffre d'affaires " },
-      },
-      x: { title: { display: true, text: 'Mois' } },
-    },
-    plugins: {
-      legend: { display: true },
-      tooltip: { callbacks: { label: (context) => `${context.parsed.y} ` } },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } },
   };
-
-  // Pie Chart (Revenue by Pack)
-  public pieChartType: ChartType = 'pie';
-  public pieChartData: ChartData<'pie'> = {
-    labels: [],
-    datasets: [
-      {
-        data: [],
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF',
-        ],
-      },
-    ],
-  };
-  public pieChartOptions: ChartConfiguration['options'] = {
+  readonly packOptions: ChartOptions<'pie'> = {
     responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.label}: ${context.parsed} `,
-        },
-      },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } },
   };
+  private readonly yearChanges = new BehaviorSubject(this.selectedYear);
+  data$!: Observable<CustomerData<RevenueReport>>;
 
-  // Line Chart (Year-over-Year Revenue)
-  public lineChartType: ChartType = 'line';
-  public lineChartData: ChartData<'line'> = {
-    labels: this.years.map((year) => year.toString()),
-    datasets: [
-      {
-        data: new Array(this.years.length).fill(0),
-        label: "Chiffre d'affaires annuel",
-        borderColor: '#36A2EB',
-        fill: false,
-        tension: 0.3,
-      },
-    ],
-  };
-  public lineChartOptions: ChartConfiguration['options'] = {
-    responsive: true,
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: "Chiffre d'affaires " },
-      },
-      x: { title: { display: true, text: 'Année' } },
-    },
-    plugins: {
-      legend: { display: true },
-      tooltip: { callbacks: { label: (context) => `${context.parsed.y}` } },
-    },
-  };
-
-  constructor(private service: CrudService, private cdr: ChangeDetectorRef) {
-    this.loadSalleIdFromToken();
-  }
+  constructor(private service: CrudService) {}
 
   ngOnInit(): void {
-    if (this.salleId) {
-      this.loadRevenueData();
-    } else {
-      console.error('No salle ID found. Please log in.');
-    }
-  }
-
-  onYearChange(): void {
-    if (this.salleId) {
-      this.loadRevenueData();
-    }
-  }
-
-  private loadSalleIdFromToken(): void {
-    const token = localStorage.getItem('myTokenSalle');
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        this.salleId = decoded.data.id;
-        console.log('Decoded salleId:', this.salleId);
-      } catch (error) {
-        console.error('Error decoding token:', error);
-      }
-    } else {
-      console.error('No token found in localStorage');
-    }
-  }
-
-  private loadRevenueData(): void {
-    if (!this.salleId) {
-      console.error('Cannot load revenue data: salleId is null');
+    const session = activeSession();
+    if (session?.role !== 'salle') {
+      this.data$ = of({ loading: false, error: 'Connectez-vous pour consulter vos revenus.', value: null });
       return;
     }
+    const id = session.claims.data.id;
+    const annual = forkJoin([...this.years].reverse().map(year => this.service.getTotalYearlyRevenue(id, year).pipe(
+      map(amount => ({ year, amount: Number(amount) }))
+    ))).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    this.data$ = this.yearChanges.pipe(switchMap(year => customerData(forkJoin({
+      annual,
+      monthly: this.service.getMonthlyRevenue(id, year),
+      packs: this.service.getRevenueByPack(id, year),
+    }).pipe(map(result => this.report(year, result.annual, result.monthly, result.packs))),
+    'Impossible de charger les revenus pour cette période.')));
+  }
 
-    // Fetch Monthly Revenue
-    this.service.getMonthlyRevenue(this.salleId, this.selectedYear).subscribe({
-      next: (data) => {
-        const monthlyData = new Array(12).fill(0);
-        Object.keys(data).forEach((monthKey) => {
-          const month = parseInt(monthKey);
-          const amount = Number(data[month]);
-          if (!isNaN(month) && !isNaN(amount) && month >= 1 && month <= 12) {
-            monthlyData[month - 1] = amount;
-          }
-        });
-        this.barChartData = {
-          ...this.barChartData,
-          datasets: [
-            { ...this.barChartData.datasets[0], data: [...monthlyData] },
-          ],
-        };
-        this.cdr.detectChanges();
-        if (this.barChart) this.barChart.update();
+  loadYear(year = this.selectedYear): void {
+    this.selectedYear = year;
+    this.yearChanges.next(year);
+  }
+
+  private report(year: number, annual: RevenueReport['annual'], totals: Record<number, number>, packs: RevenueReport['packs']): RevenueReport {
+    const monthly = months.map((label, index) => ({ label, amount: Number(totals[index + 1] ?? 0) }));
+    return {
+      total: annual.find(item => item.year === year)?.amount ?? 0,
+      monthly,
+      annual,
+      packs,
+      monthlyChart: {
+        labels: months,
+        datasets: [{ label: 'Revenus par mois', data: monthly.map(item => item.amount), backgroundColor: '#5b825d', borderRadius: 4 }],
       },
-      error: (err) => console.error('Error fetching monthly revenue:', err),
-    });
-
-    // Fetch Total Yearly Revenue
-    this.service
-      .getTotalYearlyRevenue(this.salleId, this.selectedYear)
-      .subscribe({
-        next: (total) => {
-          this.totalRevenue = Number(total);
-          this.cdr.detectChanges();
-        },
-        error: (err) => console.error('Error fetching total revenue:', err),
-      });
-
-    // Fetch Revenue by Pack
-    this.service.getRevenueByPack(this.salleId, this.selectedYear).subscribe({
-      next: (data) => {
-        const labels = data.map((item) => item.packName);
-        const amounts = data.map((item) => Number(item.revenue));
-        this.pieChartData = {
-          labels,
-          datasets: [
-            {
-              data: amounts,
-              backgroundColor: this.pieChartData.datasets[0].backgroundColor,
-            },
-          ],
-        };
-        this.cdr.detectChanges();
-        if (this.pieChart) this.pieChart.update();
+      annualChart: {
+        labels: annual.map(item => String(item.year)),
+        datasets: [{ label: 'Revenus par année', data: annual.map(item => item.amount), borderColor: '#335840', backgroundColor: '#92b579', tension: .25 }],
       },
-      error: (err) => console.error('Error fetching revenue by pack:', err),
-    });
-
-    // Fetch Year-over-Year Revenue
-    const yearlyData = new Array(this.years.length).fill(0);
-    let completedRequests = 0;
-    this.years.forEach((year, index) => {
-      this.service.getTotalYearlyRevenue(this.salleId!, year).subscribe({
-        next: (total) => {
-          yearlyData[index] = Number(total);
-          completedRequests++;
-          if (completedRequests === this.years.length) {
-            this.lineChartData = {
-              ...this.lineChartData,
-              datasets: [
-                { ...this.lineChartData.datasets[0], data: [...yearlyData] },
-              ],
-            };
-            this.cdr.detectChanges();
-            if (this.lineChart) this.lineChart.update();
-          }
-        },
-        error: (err) => {
-          console.error(`Error fetching revenue for ${year}:`, err);
-          completedRequests++;
-          if (completedRequests === this.years.length) {
-            this.lineChartData = {
-              ...this.lineChartData,
-              datasets: [
-                { ...this.lineChartData.datasets[0], data: [...yearlyData] },
-              ],
-            };
-            this.cdr.detectChanges();
-            if (this.lineChart) this.lineChart.update();
-          }
-        },
-      });
-    });
+      packChart: {
+        labels: packs.map(item => item.packName),
+        datasets: [{ data: packs.map(item => Number(item.revenue)), backgroundColor: ['#335840', '#7da05b', '#e8aa58', '#52798c', '#c8ca66'] }],
+      },
+    };
   }
 }

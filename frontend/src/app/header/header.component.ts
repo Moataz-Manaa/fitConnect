@@ -1,30 +1,53 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { CrudService } from '../service/crud.service';
+import { activeSession, clearSession } from '../service/session';
+
+const accountLinks = {
+  client: [
+    { url: '/listeReservationClient', label: 'Mes réservations' },
+    { url: '/listeAbonnementClient', label: 'Mes abonnements' },
+  ],
+  coach: [
+    { url: '/listeReservationCoach', label: 'Mes séances' },
+    { url: '/calendar', label: 'Mes disponibilités' },
+    { url: '/mes-clients-coach', label: 'Mes clients' },
+  ],
+  salle: [
+    { url: '/espace-salle', label: 'Espace salle' },
+    { url: '/mesPacks', label: 'Mes packs' },
+    { url: '/mes-clients', label: 'Mes membres' },
+    { url: '/revenue', label: 'Mes revenus' },
+    { url: '/ajouterPack', label: 'Ajouter un pack' },
+    { url: '/mes-coach', label: 'Mes coachs' },
+    { url: '/ajouter-coach', label: 'Ajouter un coach' },
+  ],
+};
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
-  IsCoachIn: boolean;
-  IsSalleIn: boolean;
-  IsClientIn: boolean;
+  menuOpen = false;
+  accountOpen = false;
 
-  constructor(private service: CrudService, private router: Router) {}
+  constructor(private router: Router) {}
 
-  ngOnInit(): void {
-    this.IsCoachIn = this.service.isCoachIn();
-    this.IsSalleIn = this.service.isSalleIn();
-    this.IsClientIn = this.service.isClientIn();
+  get role() { return activeSession()?.role; }
+
+  get links() {
+    const role = this.role;
+    return role ? accountLinks[role] : [];
   }
 
-  logout() {
-    console.log('logout');
-    localStorage.clear();
-    this.router.navigate(['/']).then(() => {
-      window.location.reload();
-    });
+  closeMenus(): void {
+    this.menuOpen = false;
+    this.accountOpen = false;
+  }
+
+  logout(): void {
+    clearSession();
+    this.closeMenus();
+    void this.router.navigateByUrl('/');
   }
 }

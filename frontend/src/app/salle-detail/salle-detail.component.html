@@ -1,199 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-  <!-- Mirrored from powerzone.dexignzone.com/xhtml/product-detail.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:49 GMT -->
-  <head>
-    <!-- Title -->
-    <title>PowerZone - Fitness, Workout & Gym HTML Template</title>
-
-    <!-- Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="author" content="DexignZone" />
-    <meta name="robots" content="index, follow" />
-    <meta
-      name="keywords"
-      content="bodybuilding, class, clean, coach, fitness, fitness gym, gym, gym trainer, health, martial arts, personal trainer, sport, sports theme, training, workout, Fitness template, Workout design, Health and wellness, Exercise layout, Fitness app, Gym website, UI components, UX components, Workout routines, Health template, UIUX, creative, HTML, CSS, Sass Integration, HTML Template, Bootstrap, Bootstrap Template, Gym UI Kit, websiite, Website template, Fitness Website Design, Exercise App Design, Gym Interface, Exercise Dashboard, Gym Homepage Template, HTML Gym Template, Responsive Gym Design, responsive, HTML Fitness Components, Workout Program Template, Fitness Studio HTML, Responsive Workout Design, Landing Page Kit, HTML5, HTML/CSS"
-    />
-    <meta
-      name="description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta
-      property="og:title"
-      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
-    />
-    <meta
-      property="og:description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta property="og:image" content="social-image.png" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta
-      name="twitter:title"
-      content="PowerZone - Fitness, Workout & Gym HTML Template | DexignZone"
-    />
-    <meta
-      name="twitter:description"
-      content="Embark on a transformative fitness journey with the PowerZone HTML Template. Elevate your workouts and gym routines with this dynamic and versatile template designed to unleash the power of sleek aesthetics and intuitive features. Discover a world of possibilities for fitness and wellness, as PowerZone becomes your gateway to a healthier, stronger version of yourself. With its modern design and comprehensive features, this template is set to redefine and enhance your fitness experience like never before"
-    />
-    <meta name="twitter:image" content="social-image.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-
-    <!-- Mobile Specific -->
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body id="bg" class="data-typography-1">
-    <div class="page-wraper">
-      <!-- Header -->
-      <app-header></app-header>
-      <!-- Header -->
-
-      <div class="page-content bg-white">
-        <!-- Our Product Detail -->
-        <section class="content-inner pb-0">
-          <div class="container">
-            <div class="row">
-              <div class="col-lg-6 col-md-6">
-                <div class="dz-product-detail sticky-top side-bar left">
-                  <div class="swiper product-gallery-swiper2" id="lightgallery">
-                    <div class="swiper-wrapper">
-                      <div class="swiper-slide">
-                        <div
-                          class="dz-media DZoomImage wow fadeInUp"
-                          data-wow-delay="0.4s"
-                        >
-                          <img src="{{ this.salle.image }}" alt="image" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-6 col-md-6">
-                <div class="dz-product-detail style-1">
-                  <div class="dz-content">
-                    <div class="dz-content-footer">
-                      <div class="dz-content-start">
-                        <h4
-                          class="title m-b5 wow fadeInUp"
-                          data-wow-delay="1.3s"
-                        >
-                          {{ this.salle.nom }}
-                        </h4>
-                      </div>
-                    </div>
-                    <div class="dz-info wow fadeInUp" data-wow-delay="1.7s">
-                      <ul>
-                        <li>
-                          <strong>Adresse:</strong>
-                          <span>{{ this.salle.adresse }}</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div class="dz-info wow fadeInUp" data-wow-delay="1.7s">
-                      <ul>
-                        <li>
-                          <strong>Téléphone:</strong>
-                          <span>{{ this.salle.telephone }}</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div class="dz-info wow fadeInUp" data-wow-delay="1.7s">
-                      <ul>
-                        <li>
-                          <strong>Email:</strong>
-                          <span>{{ this.salle.email }}</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row mb-3">
-              <h1 class="mb-4" style="text-align: center">Nos offres</h1>
-              <div
-                class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-12"
-                *ngFor="let pack of listePack"
-              >
-                <div
-                  class="shop-card style-1 hover-aware wow fadeInUp"
-                  data-wow-delay="0.6s"
-                >
-                  <div class="dz-media">
-                    <img src="{{ pack.image }}" alt="{{ pack.nom }}" />
-                    <div class="shop-meta">
-                      <ul>
-                        <li>
-                          <a href="/detail/{{ pack.id }}">voir détails</a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div class="effect"></div>
-                  </div>
-                  <div class="dz-content">
-                    <h4 class="title">
-                      <a href="product-detail.html">{{ pack.nom }}</a>
-                    </h4>
-                    <p>
-                      <span class="font-weight-600"
-                        >{{ pack.prix }}d /mois</span
-                      >
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row mb-5">
-              <div
-                class="section-head style-2 text-center wow fadeInUp"
-                data-wow-delay="0.2s"
-              >
-                <h1 class="mb-4">Nos coachs</h1>
-              </div>
-              <div class="swiper team-slider style-2">
-                <div class="swiper-wrapper" *ngFor="let coach of coachSalle">
-                  <div class="swiper-slide wow fadeInUp" data-wow-delay="0.4s">
-                    <div class="dz-team style-1">
-                      <div class="dz-media">
-                        <a><img src="{{ coach.image }}" alt="" /></a>
-                      </div>
-                      <div class="dz-content">
-                        <h4 class="dz-name">
-                          {{ coach.nom }} {{ coach.prenom }}
-                        </h4>
-                        <span class="dz-position">{{ coach.activity }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="num-pagination justify-content-center">
-                <div class="team-slider-prev btn-prev">
-                  <i class="fa-solid fa-arrow-left"></i>
-                </div>
-                <div
-                  class="swiper-pagination team-slider-pagination style-2"
-                ></div>
-                <div class="team-slider-next btn-next">
-                  <i class="fa-solid fa-arrow-right"></i>
-                </div>
-              </div>
-            </div>
-          </div>
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section">
+  <a class="fc-text-link fc-back" routerLink="/liste-salle">← Toutes les salles</a>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement de la salle…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="load()"></app-page-state>
+    <app-page-state *ngIf="!data.loading && !data.error && !data.value" message="Cette salle est indisponible."></app-page-state>
+    <ng-container *ngIf="data.value as profile">
+      <header class="fc-page-heading">
+        <h1>{{ profile.gym.nom }}</h1>
+        <p *ngIf="profile.gym.adresse">{{ profile.gym.adresse }}</p>
+      </header>
+      <div class="fc-detail-grid">
+        <img *ngIf="profile.gym.image; else placeholder" class="fc-detail-image" [src]="profile.gym.image" alt="" />
+        <ng-template #placeholder><div class="fc-card fc-card-placeholder" aria-hidden="true">{{ profile.gym.nom?.charAt(0) }}</div></ng-template>
+        <section class="fc-list" aria-labelledby="gym-packs">
+          <h2 id="gym-packs">Abonnements</h2>
+          <app-page-state *ngIf="!profile.packs.length" message="Cette salle n’a pas d’abonnement disponible."></app-page-state>
+          <article class="fc-card fc-list-row" *ngFor="let pack of profile.packs">
+            <div><h3>{{ pack.nom }}</h3><p class="fc-muted">{{ pack.category?.nom }}</p></div>
+            <a class="fc-button fc-button-outline" [routerLink]="['/detail', pack.id]" [attr.aria-label]="'Voir l’offre : ' + pack.nom">Voir l’offre</a>
+          </article>
         </section>
-
-        <!-- Our Product Detail -->
       </div>
-
-      <!-- Footer -->
-      <app-footer></app-footer>
-      <!-- Footer End -->
-    </div>
-  </body>
-
-  <!-- Mirrored from powerzone.dexignzone.com/xhtml/product-detail.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 12:18:52 GMT -->
-</html>
+      <section class="fc-block" aria-labelledby="gym-team">
+        <div class="fc-section-heading"><h2 id="gym-team">L’équipe de la salle</h2></div>
+        <app-page-state *ngIf="!profile.coaches.length" message="Aucun coach renseigné."></app-page-state>
+        <div class="fc-grid" *ngIf="profile.coaches.length">
+          <article class="fc-card" *ngFor="let coach of profile.coaches">
+            <img *ngIf="coach.image" class="fc-card-image" [src]="coach.image" alt="" loading="lazy" />
+            <div class="fc-card-body">
+              <h3>{{ coach.prenom }} {{ coach.nom }}</h3>
+              <p *ngIf="coach.activity" class="fc-muted">{{ coach.activity }}</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </ng-container>
+</main>
+<app-footer></app-footer>

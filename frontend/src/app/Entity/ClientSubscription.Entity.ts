@@ -1,4 +1,4 @@
-export class ClientSubscription {
+export interface ClientSubscription {
   clientId: number;
   nom: string;
   prenom: string;
@@ -6,7 +6,7 @@ export class ClientSubscription {
   telephone: string;
   age: number;
   packNom: string;
-  dateCreation: Date;
-  dateActivation: Date;
-  etat: string; // "actif", "inactif", "en_attente"
+  dateCreation: string | null;
+  dateActivation: string | null;
+  etat: 'actif' | 'inactif' | 'en_attente';
 }

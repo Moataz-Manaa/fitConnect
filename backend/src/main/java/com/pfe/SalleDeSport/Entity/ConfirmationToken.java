@@ -17,7 +17,7 @@ public class ConfirmationToken {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
 
-    @OneToOne(targetEntity = Client.class, fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToOne(targetEntity = Client.class, fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "client_id")
     private Client client;
 

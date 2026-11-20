@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/management/management-table.component.spec.ts",
+    "src/app/service/crud.service.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

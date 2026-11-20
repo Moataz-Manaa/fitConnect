@@ -1,99 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Log In | Osen - Responsive Bootstrap 5 Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      content="A fully featured admin theme which can be used to build CRM, CMS, etc."
-      name="description"
-    />
-    <meta content="Coderthemes" name="author" />
-  </head>
-
-  <body>
-    <div
-      class="auth-bg d-flex min-vh-100 justify-content-center align-items-center"
-    >
-      <div class="row g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
-        <div class="col-xl-4 col-lg-5 col-md-6">
-          <div class="card overflow-hidden text-center h-100 p-xxl-4 p-3 mb-0">
-            <a href="index.html" class="auth-brand mb-3">
-              <img
-                src="assets/images/logo66.png"
-                alt="dark logo"
-                height="80px"
-                width="170px"
-                class="logo-dark"
-              />
-              <img
-                src="assets/images/logo66.png"
-                alt="logo light"
-                height="24"
-                class="logo-light"
-              />
-            </a>
-
-            <h3 class="fw-semibold mb-2">Connectez-vous à votre compte</h3>
-
-            <p class="text-muted mb-4">
-              Entrez votre adresse e-mail et votre mot de passe pour accéder au
-              panneau d'administration
-            </p>
-
-            <p class="fs-13 fw-semibold">Connectez-vous avec votre e-mail</p>
-
-            <form
-              class="text-start mb-3"
-              (ngSubmit)="login()"
-              [formGroup]="loginForm"
-            >
-              <div class="mb-3">
-                <label class="form-label" for="example-email">Email</label>
-                <input
-                  formControlName="email"
-                  type="email"
-                  id="example-email"
-                  name="example-email"
-                  class="form-control"
-                  placeholder="Entrez votre email"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label" for="example-password"
-                  >Mot de passe</label
-                >
-                <input
-                  formControlName="mp"
-                  type="password"
-                  id="example-password"
-                  class="form-control"
-                  placeholder="Entrez votre mot de passe"
-                />
-              </div>
-
-              <span [innerHTML]="this.messageCommande"></span>
-              <div class="d-grid">
-                <button class="btn btn-primary" type="submit">
-                  Se Connecter
-                </button>
-              </div>
-            </form>
-
-            <p class="mt-auto mb-0">
-              <script>
-                document.write(new Date().getFullYear());
-              </script>
-              © FitConnect - By
-              <span
-                class="fw-bold text-decoration-underline text-uppercase text-reset fs-12"
-                >Moataz Manaa</span
-              >
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+<main class="adm-login">
+  <div class="adm-login-brand"><span class="adm-brand"><span aria-hidden="true">F</span> FitConnect</span></div>
+  <section class="adm-panel" aria-labelledby="admin-sign-in">
+    <header class="adm-heading"><h1 id="admin-sign-in">Connexion administrateur</h1></header>
+    <form class="adm-form" [formGroup]="form" (ngSubmit)="login()" [attr.aria-busy]="busy">
+      <label>Adresse e-mail<input type="email" formControlName="email" autocomplete="username" required /></label>
+      <label>Mot de passe<input type="password" formControlName="mp" autocomplete="current-password" required /></label>
+      <p *ngIf="error" class="adm-notice adm-error" role="alert">{{ error }}</p>
+      <button class="adm-button" type="submit" [disabled]="busy">{{ busy ? 'Connexion…' : 'Se connecter' }}</button>
+    </form>
+  </section>
+</main>

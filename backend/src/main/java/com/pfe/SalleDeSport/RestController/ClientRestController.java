@@ -1,15 +1,13 @@
 package com.pfe.SalleDeSport.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pfe.SalleDeSport.Entity.Admin;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.pfe.SalleDeSport.Security.SessionTokens;
+import com.pfe.SalleDeSport.Security.GoogleIdentity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
 import com.pfe.SalleDeSport.Entity.Client;
-import com.pfe.SalleDeSport.Entity.Coach;
 import com.pfe.SalleDeSport.Repository.ClientRepository;
 import com.pfe.SalleDeSport.Service.ClientService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +15,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.util.*;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping(value = "/client")
 public class ClientRestController {
+    @Autowired
+    private SessionTokens sessionTokens;
+    @Autowired
+    private GoogleIdentity googleIdentity;
     @Autowired
     ClientService clientService;
     @Autowired
@@ -55,59 +55,44 @@ public class ClientRestController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> loginClient(@RequestBody Client client) {
-        HashMap<String, Object> response = new HashMap<>();
-
-        Client userFromDB = clientRepository.findByEmail(client.getEmail());
-
-        if (userFromDB == null) {
-            response.put("message", "Client not found !");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } else {
-            boolean compare = this.bCryptPasswordEncoder.matches(client.getMp(), userFromDB.getMp());
-            if (!compare) {
-                response.put("message", "client not found !");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }else {
-                if (userFromDB.isEtat() == true) {
-                    String token = Jwts.builder()
-                            .claim("data", userFromDB)
-                            .signWith(SignatureAlgorithm.HS256, "SECRET")
-                            .compact();
-                    response.put("token", token);
-
-                    return ResponseEntity.status(HttpStatus.OK).body(response);
-                } else {
-                    response.put("message", "client inactif");
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-                }
-
-            }
+        Client account = client.getEmail() == null ? null : clientRepository.findByEmail(client.getEmail());
+        if (account == null || client.getMp() == null || !bCryptPasswordEncoder.matches(client.getMp(), account.getMp())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Identifiants invalides"));
         }
+        if (!account.isEtat()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Compte inactif"));
+        }
+        String token = sessionTokens.issue("client", account.getId(), account.getPrenom(), account.getNom());
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
-        return clientService.forgotPassword(email);
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        return clientService.forgotPassword(request.email());
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String token,
-                                           @RequestParam String newPassword) {
-        return clientService.resetPassword(token, newPassword);
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        if (request.token() == null || request.newPassword() == null || request.newPassword().isBlank()) {
+            return ResponseEntity.badRequest().body("Token and new password are required");
+        }
+        return clientService.resetPassword(request.token(), request.newPassword());
     }
 
 
     @RequestMapping(value = "/{id}" , method = RequestMethod.GET)
+    @PreAuthorize("hasRole('admin') or @accountAccess.ownsAccount(authentication, #id)")
     public Optional<Client> getClientById(@PathVariable("id") Long id){
         Optional<Client> client = clientService.afficherClientById(id);
         return client;
     }
 
     @RequestMapping(value = "edit/{id}", method = RequestMethod.PUT)
+    @PreAuthorize("@accountAccess.ownsAccount(authentication, #id)")
     public Client modifierClient(
             @PathVariable("id") Long id,
             @RequestBody Client client,
-            @RequestParam(value = "currentPassword", required = false) String currentPassword) {
+            @RequestHeader(value = "X-Current-Password", required = false) String currentPassword) {
         Client existingClient = clientRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Client not found with id: " + id));
 
@@ -127,71 +112,40 @@ public class ClientRestController {
         // Password update
         if (client.getMp() != null && !client.getMp().trim().isEmpty()) {
             if (currentPassword == null || !bCryptPasswordEncoder.matches(currentPassword, existingClient.getMp())) {
-                throw new IllegalArgumentException("Current password is incorrect");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
             }
             existingClient.setMp(bCryptPasswordEncoder.encode(client.getMp()));
-        }
-        // Email and etat are preserved
-        if (client.getEmail() != null) {
-            existingClient.setEmail(client.getEmail());
         }
         return clientService.modifierClient(existingClient);
     }
 
-    private static final String GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/tokeninfo?id_token=";
-
     @PostMapping("/login-google")
-    public ResponseEntity<Map<String, Object>> loginWithGoogle(@RequestParam("id_token") String idToken) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
+        Jwt identity;
         try {
-            String googleUserInfo = validateGoogleToken(idToken);
-            JsonNode userInfo = new ObjectMapper().readTree(googleUserInfo);
-
-            String email = userInfo.get("email").asText();
-            String fullName = userInfo.get("name").asText();
-            String firstName = fullName.split(" ")[0]; // Prenons le prénom comme étant la première partie du nom complet
-            String lastName = fullName.split(" ").length > 1 ? fullName.split(" ")[1] : ""; // Nom de famille s'il existe
-
-            Client existingClient = clientRepository.findByEmail(email);
-
-            if (existingClient == null) {
-
-                Client newClient = new Client();
-                newClient.setEmail(email);
-                newClient.setNom(lastName); // Nom
-                newClient.setPrenom(firstName); // Prénom
-                newClient.setMp("defaultPassword"); // Mot de passe temporaire, à changer plus tard
-                newClient.setEtat(true);  // Statut actif
-
-                clientRepository.save(newClient);
-                existingClient = newClient;
-            }
-
-            String token = generateToken(existingClient);
-            response.put("token", token);
-
-            return ResponseEntity.ok(response);
-
-        } catch (IOException e) {
-            response.put("message", "Erreur lors du traitement du token Google : " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } catch (Exception e) {
-            response.put("message", "Une erreur inconnue est survenue.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            identity = googleIdentity.verify(request.idToken());
+        } catch (JwtException | IllegalArgumentException invalidToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Identifiants Google invalides"));
         }
+
+        String email = identity.getClaimAsString("email");
+        Client client = clientRepository.findByEmail(email);
+        if (client == null) {
+            client = new Client();
+            client.setEmail(email);
+            client.setNom(Objects.requireNonNullElse(identity.getClaimAsString("family_name"), ""));
+            client.setPrenom(Objects.requireNonNullElse(identity.getClaimAsString("given_name"), ""));
+            client.setMp(bCryptPasswordEncoder.encode(UUID.randomUUID().toString()));
+            client.setEtat(true);
+            client = clientRepository.save(client);
+        }
+        if (!client.isEtat()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Compte inactif"));
+        }
+        return ResponseEntity.ok(Map.of("token", sessionTokens.issue("client", client.getId(), client.getPrenom(), client.getNom())));
     }
 
-    private String validateGoogleToken(String idToken) {
-        String url = GOOGLE_TOKEN_URL + idToken;
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(url, String.class);
-    }
-
-    private String generateToken(Client client) {
-        return Jwts.builder()
-                .claim("data", client)
-                .signWith(SignatureAlgorithm.HS256, "SECRET_KEY")
-                .compact();
-    }
-
+    public record GoogleLoginRequest(String idToken) {}
+    public record ForgotPasswordRequest(String email) {}
+    public record ResetPasswordRequest(String token, String newPassword) {}
 }

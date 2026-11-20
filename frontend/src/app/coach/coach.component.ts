@@ -1,36 +1,27 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Observable, map } from 'rxjs';
 import { Coach } from '../Entity/Coach.Entity';
+import { CustomerData, customerData, matchesSearch } from '../customer/customer-data';
 import { CrudService } from '../service/crud.service';
 
 @Component({
   selector: 'app-coach',
   templateUrl: './coach.component.html',
-  styleUrls: ['./coach.component.css'],
 })
 export class CoachComponent implements OnInit {
-  listeCoach: Coach[] = [];
-  filteredCoach: Coach[] = [];
-  searchTerm: string = '';
+  data$!: Observable<CustomerData<Coach[]>>;
+  query = '';
+  page = 1;
 
-  constructor(private service: CrudService, private router: Router) {}
+  constructor(private api: CrudService) {}
 
-  ngOnInit(): void {
-    this.service.getCoachs().subscribe((coaches) => {
-      this.listeCoach = coaches;
-      this.filteredCoach = coaches; // Initialize filteredCoach with all coaches
-    });
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.data$ = customerData(this.api.getCoachs().pipe(map(items => (items ?? []).filter(item => item?.id && item.etat !== false))), 'Impossible de charger les coachs.');
   }
 
-  onSearch(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredCoach = this.listeCoach; // Reset to full list if search is empty
-    } else {
-      this.filteredCoach = this.listeCoach.filter((coach) =>
-        `${coach.nom} ${coach.prenom}`
-          .toLowerCase()
-          .includes(this.searchTerm.toLowerCase())
-      );
-    }
+  results(items: Coach[]): Coach[] {
+    return items.filter(coach => matchesSearch(this.query, coach.prenom, coach.nom));
   }
 }

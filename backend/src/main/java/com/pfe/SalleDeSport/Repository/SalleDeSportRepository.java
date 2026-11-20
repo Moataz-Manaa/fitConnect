@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SalleDeSportRepository extends JpaRepository<SalleDeSport, Long> {
     boolean existsByEmail(String email);
     SalleDeSport findByEmail(String email);
+    long countByEtat(boolean etat);
 
 }

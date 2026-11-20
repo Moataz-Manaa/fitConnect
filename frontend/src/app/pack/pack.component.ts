@@ -1,21 +1,32 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { CrudService } from '../service/crud.service';
+import { Component, OnInit } from '@angular/core';
+import { Observable, map } from 'rxjs';
 import { Pack } from '../Entity/Pack.Entity';
+import { CustomerData, customerData, matchesSearch } from '../customer/customer-data';
+import { CrudService } from '../service/crud.service';
 
 @Component({
   selector: 'app-pack',
   templateUrl: './pack.component.html',
-  styleUrls: ['./pack.component.css'],
 })
-export class PackComponent {
-  constructor(private service: CrudService, private router: Router) {}
+export class PackComponent implements OnInit {
+  data$!: Observable<CustomerData<Pack[]>>;
+  query = '';
+  page = 1;
+  category = '';
 
-  listePack: Pack[];
+  categories(packs: Pack[]): string[] {
+    return [...new Set(packs.map(pack => pack.category?.nom).filter((name): name is string => !!name))].sort();
+  }
 
-  ngOnInit(): void {
-    this.service.getPacks().subscribe((pack) => {
-      this.listePack = pack;
-    });
+  constructor(private api: CrudService) {}
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.data$ = customerData(this.api.getPacks().pipe(map(items => (items ?? []).filter(item => item?.id && item.salle?.etat !== false))), 'Impossible de charger les abonnements.');
+  }
+
+  results(items: Pack[]): Pack[] {
+    return items.filter(abonnement => matchesSearch(this.query, abonnement.nom, abonnement.salle?.nom, abonnement.category?.nom) && (!this.category || abonnement.category?.nom === this.category));
   }
 }

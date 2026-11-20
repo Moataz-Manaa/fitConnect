@@ -62,7 +62,6 @@ export class RegisterSalleDeSportComponent {
 
   addNewSalleDeSport() {
     let data = this.salleDeSportForm.value;
-    console.log(data); // Check if data.image contains the Base64 string
 
     // Validate form fields
     if (

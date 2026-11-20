@@ -1,3 +1,4 @@
+import { saveSession } from '../service/session';
 import { Component } from '@angular/core';
 import {
   FormGroup,
@@ -40,7 +41,7 @@ export class LoginSalleDeSportComponent {
 
   login() {
     let data = this.loginForm.value;
-    console.log(data);
+
     let salleDeSport = new SalleDeSport(
       null,
       null,
@@ -50,7 +51,7 @@ export class LoginSalleDeSportComponent {
       null,
       null
     );
-    console.log(salleDeSport);
+
     if (data.email == 0 || data.mp == 0) {
       this.messageCommande = `<div class="alert alert-danger" role="alert">
         remplir votre champs
@@ -58,18 +59,16 @@ export class LoginSalleDeSportComponent {
     } else {
       this.service.loginSalleDeSport(salleDeSport).subscribe(
         (res) => {
-          console.log(res);
+
           this.messageCommande = `<div class="alert alert-success" role="alert">
         avec success
       </div>`;
           let token = res.token;
-          localStorage.setItem('myTokenSalle', token);
-          this.router.navigate(['']).then(() => {
-            window.location.reload();
-          });
+          saveSession('salle', token);
+          void this.router.navigate(['/espace-salle']);
         },
         (err) => {
-          console.log(err);
+
           this.messageCommande = `<div class="alert alert-danger" role="alert">
             mot de passe ou email incorrect
           </div>`;

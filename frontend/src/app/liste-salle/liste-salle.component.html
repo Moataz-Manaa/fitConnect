@@ -1,139 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      /* Ensure all cards have the same height */
-      .shop-card {
-        display: flex;
-        flex-direction: column;
-        height: 330px;
-        overflow: hidden;
-        border: 1px solid #ddd;
-      }
-
-      .dz-media {
-        flex: 1 1 auto;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .dz-media img {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        display: block;
-      }
-
-      .dz-content {
-        padding: 15px;
-        flex: 0 0 auto;
-        text-align: center;
-      }
-
-      .shop-meta {
-        position: absolute;
-        bottom: 10px;
-        width: 100%;
-        text-align: center;
-      }
-
-      @media (max-width: 768px) {
-        .shop-card {
-          height: 350px;
-        }
-        .dz-media img {
-          height: 200px;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .shop-card {
-          height: 300px;
-        }
-        .dz-media img {
-          height: 150px;
-        }
-      }
-    </style>
-  </head>
-  <body id="bg" class="data-typography-1">
-    <div class="page-wraper">
-      <!-- Header -->
-      <app-header></app-header>
-
-      <div class="page-content bg-white" style="height: 900px">
-        <section class="content-inner">
-          <div class="container">
-            <div class="row">
-              <div class="col-xl-8 col-lg-12 m-b30">
-                <div class="row">
-                  <div
-                    class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-12"
-                    *ngFor="let salle of filteredSalle"
-                  >
-                    <div
-                      class="shop-card style-1 hover-aware wow fadeInUp"
-                      data-wow-delay="0.6s"
-                    >
-                      <div class="dz-media">
-                        <img src="{{ salle.image }}" alt="{{ salle.nom }}" />
-                        <div class="shop-meta">
-                          <ul>
-                            <li>
-                              <a href="/detail-salle/{{ salle.id }}"
-                                >voir détails</a
-                              >
-                            </li>
-                          </ul>
-                        </div>
-                        <div class="effect"></div>
-                      </div>
-                      <div class="dz-content">
-                        <h4 class="title">
-                          <a href="product-detail.html">{{ salle.nom }}</a>
-                        </h4>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-xl-4 col-lg-12">
-                <div class="shop-filter side-bar sticky-top">
-                  <aside>
-                    <div class="search-bx wow fadeInUp" data-wow-delay="0.2s">
-                      <form role="search" method="post">
-                        <div class="input-group">
-                          <div class="input-side">
-                            <input
-                              name="text"
-                              class="form-control"
-                              placeholder="recherche..."
-                              type="text"
-                              [(ngModel)]="searchTerm"
-                              (ngModelChange)="onSearch()"
-                            />
-                            <div class="input-group-btn">
-                              <button type="submit" class="btn">
-                                <i class="flaticon-magnifying-glass"></i>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                  </aside>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+<app-header></app-header>
+<main class="fc-page fc-wrap fc-section">
+  <header class="fc-page-heading">
+    <h1>Salles de sport</h1>
+    <p>Trouvez une salle et consultez les abonnements qu’elle propose.</p>
+  </header>
+  <ng-container *ngIf="data$ | async as data">
+    <app-page-state *ngIf="data.loading" kind="loading" message="Chargement des salles…"></app-page-state>
+    <app-page-state *ngIf="data.error" kind="error" [message]="data.error" [retryable]="true" (retry)="load()"></app-page-state>
+    <ng-container *ngIf="data.value as items">
+      <div class="fc-filter" *ngIf="items.length">
+        <label class="fc-field">
+          Rechercher une salle
+          <input type="search" [(ngModel)]="query" (ngModelChange)="page = 1" placeholder="Nom ou adresse" />
+        </label>
+        <button *ngIf="query" class="fc-button fc-button-outline" type="button" (click)="query = ''; page = 1">Effacer les filtres</button>
       </div>
-      <app-footer></app-footer>
-
-      <!-- Footer -->
-    </div>
-  </body>
-</html>
+      <ng-container *ngIf="results(items) as matches">
+        <p *ngIf="items.length" class="fc-result-count fc-muted" aria-live="polite">{{ matches.length }} {{ matches.length === 1 ? 'résultat' : 'résultats' }}</p>
+        <app-page-state *ngIf="!matches.length" [message]="items.length ? 'Aucun résultat pour cette recherche.' : 'Aucune salle disponible pour le moment.'"></app-page-state>
+        <div class="fc-grid" *ngIf="matches.length">
+          <article class="fc-card fc-result-card" *ngFor="let item of matches | paginate: { itemsPerPage: 12, currentPage: page }">
+            <img *ngIf="item.image; else placeholder" class="fc-card-image" [src]="item.image" alt="" loading="lazy" />
+            <ng-template #placeholder><div class="fc-card-placeholder" aria-hidden="true">S</div></ng-template>
+            <div class="fc-card-body">
+              <h2>{{ item.nom }}</h2>
+              <p class="fc-muted" *ngIf="item.adresse || 'Adresse non renseignée'">{{ item.adresse || 'Adresse non renseignée' }}</p>
+              <a *ngIf="item.id" class="fc-button fc-button-outline" [routerLink]="['/detail-salle', item.id]" [attr.aria-label]="'Voir la salle : ' + (item.nom)">Voir la salle</a>
+            </div>
+          </article>
+        </div>
+        <pagination-controls *ngIf="matches.length > 12" (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant" screenReaderPaginationLabel="Pagination" screenReaderPageLabel="Page" screenReaderCurrentLabel="Page actuelle"></pagination-controls>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</main>
+<app-footer></app-footer>

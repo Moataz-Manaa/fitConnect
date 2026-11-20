@@ -59,7 +59,6 @@ export class RegisterCoachComponent {
 
   addNewCoach() {
     let data = this.coachForm.value;
-    console.log(data);
     let coach = new Coach(
       undefined,
       data.nom,
@@ -70,7 +69,6 @@ export class RegisterCoachComponent {
       data.image,
       undefined
     );
-    console.log(coach);
 
     if (
       data.nom == 0 ||

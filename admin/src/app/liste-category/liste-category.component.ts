@@ -1,94 +1,51 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Category } from '../Entity/Category.Entity';
+import { Observable, finalize, map } from 'rxjs';
+import { deleteAction } from '../management/management-actions';
+import { ManagementTableComponent, TableRow } from '../management/management-table.component';
 import { CrudService } from '../service/crud.service';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
 
-@Component({
-  selector: 'app-liste-category',
-  templateUrl: './liste-category.component.html',
-  styleUrls: ['./liste-category.component.css'],
-})
+@Component({ selector: 'app-liste-category', templateUrl: './liste-category.component.html' })
 export class ListeCategoryComponent {
-  p: number = 1;
-  collection: any[];
-  listeCategory: Category[];
-  categoryForm: FormGroup;
-  messageCommande = '';
+  private readonly destroyRef = inject(DestroyRef);
+  name = '';
+  saving = false;
+  error = '';
 
-  constructor(
-    private service: CrudService,
-    private router: Router,
-    private fb: FormBuilder
-  ) {
-    let formControls = {
-      nom: new FormControl('', [Validators.required]),
-    };
-    this.categoryForm = this.fb.group(formControls);
-  }
+  constructor(private service: CrudService) {}
 
-  get nom() {
-    return this.categoryForm.get('nom');
-  }
+  readonly loadRows = (): Observable<TableRow[]> => this.service.getCategory().pipe(map(items =>
+    (items ?? []).flatMap(row => {
+      const id = row?.id;
+      if (id == null) return [];
+      const label = row.nom || String(id);
+      return [{
+        id,
+        cells: [id, row.nom],
+        actions: [deleteAction(label, () => this.service.onDeleteCategory(id))],
+      }];
+    })
+  ));
 
-  ngOnInit(): void {
-    this.service.getCategory().subscribe((category) => {
-      this.listeCategory = category;
+  addCategory(table: ManagementTableComponent): void {
+    if (this.saving || table.loading || table.saving) return;
+    const name = this.name.trim();
+    if (!name) {
+      this.error = 'Saisissez le nom de la catégorie.';
+      return;
+    }
+    this.saving = true;
+    this.error = '';
+    this.service.addCategory(new Category(undefined, name)).pipe(
+      takeUntilDestroyed(this.destroyRef), finalize(() => this.saving = false)
+    ).subscribe({
+      next: () => {
+        this.name = '';
+        table.message = 'Catégorie ajoutée.';
+        table.reload();
+      },
+      error: () => this.error = 'Impossible d’ajouter la catégorie. Réessayez.',
     });
-  }
-
-  DeleteCategory(category: Category) {
-    if (
-      confirm(
-        "Voulez vous supprimer ce message de category avec l'ID " +
-          category.id +
-          '?'
-      )
-    ) {
-      this.service.onDeleteCategory(category.id).subscribe(() => {
-        this.router.navigate(['/listeCategory']).then(() => {
-          window.location.reload();
-        });
-      });
-    }
-  }
-
-  addNewCategory() {
-    let data = this.categoryForm.value;
-    console.log(data);
-    let category = new Category(undefined, data.nom);
-
-    if (!data.nom) {
-      this.messageCommande = `<div class="alert alert-danger" role="alert">
-        remplir votre champs
-      </div>`;
-    } else {
-      this.service.addCategory(category).subscribe(
-        (res: any) => {
-          console.log(res);
-          this.messageCommande = `<div class="alert alert-success" role="alert">
-            Catégorie ajoutée avec succès!
-          </div>`;
-
-          this.listeCategory.push(res);
-
-          this.categoryForm.reset();
-
-          setTimeout(() => {
-            this.messageCommande = '';
-          }, 3000);
-        },
-        (err) => {
-          this.messageCommande = `<div class="alert alert-warning" role="alert">
-            EMAIL EXISTE déjà!
-          </div>`;
-        }
-      );
-    }
   }
 }

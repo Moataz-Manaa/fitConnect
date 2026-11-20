@@ -1,3 +1,4 @@
+import { saveSession } from '../service/session';
 import { Component } from '@angular/core';
 import {
   FormGroup,
@@ -39,7 +40,7 @@ export class LoginCoachComponent {
 
   login() {
     let data = this.loginForm.value;
-    console.log(data);
+
     let coach = new Coach(
       null,
       null,
@@ -50,7 +51,7 @@ export class LoginCoachComponent {
       null,
       null
     );
-    console.log(coach);
+
     if (data.email == 0 || data.mp == 0) {
       this.messageCommande = `<div class="alert alert-danger" role="alert">
         remplir votre champs
@@ -58,18 +59,16 @@ export class LoginCoachComponent {
     } else {
       this.service.loginCoach(coach).subscribe(
         (res) => {
-          console.log(res);
+
           this.messageCommande = `<div class="alert alert-success" role="alert">
         avec success
       </div>`;
           let token = res.token;
-          localStorage.setItem('myTokenCoach', token);
-          this.router.navigate(['']).then(() => {
-            window.location.reload();
-          });
+          saveSession('coach', token);
+          void this.router.navigate(['/listeReservationCoach']);
         },
         (err) => {
-          console.log(err);
+
           this.messageCommande = `<div class="alert alert-danger" role="alert">
             mot de passe ou email incorrect
           </div>`;

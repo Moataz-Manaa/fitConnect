@@ -8,7 +8,8 @@ import { ListeAdminComponent } from './liste-admin/liste-admin.component';
 import { LoginComponent } from './login/login.component';
 import { HomeComponent } from './home/home.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { SessionInterceptor } from './service/session.interceptor';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { HeaderComponent } from './header/header.component';
 import { MenuComponent } from './menu/menu.component';
 import { FooterComponent } from './footer/footer.component';
@@ -22,6 +23,8 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { ListePackComponent } from './liste-pack/liste-pack.component';
 import { ListeAbonnementClientComponent } from './liste-abonnement-client/liste-abonnement-client.component';
 import { MonCompteComponent } from './mon-compte/mon-compte.component';
+import { AdminShellComponent } from './management/admin-shell.component';
+import { ManagementTableComponent } from './management/management-table.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +45,7 @@ import { MonCompteComponent } from './mon-compte/mon-compte.component';
     ListePackComponent,
     ListeAbonnementClientComponent,
     MonCompteComponent,
+    AdminShellComponent,
   ],
   imports: [
     BrowserModule,
@@ -50,8 +54,9 @@ import { MonCompteComponent } from './mon-compte/mon-compte.component';
     ReactiveFormsModule,
     HttpClientModule,
     NgxPaginationModule,
+    ManagementTableComponent,
   ],
-  providers: [],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: SessionInterceptor, multi: true }],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent],
 })

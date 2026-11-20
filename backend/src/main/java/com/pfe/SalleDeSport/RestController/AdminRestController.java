@@ -1,15 +1,17 @@
 package com.pfe.SalleDeSport.RestController;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.pfe.SalleDeSport.Security.AccountAccess;
+import com.pfe.SalleDeSport.Security.SessionTokens;
 import com.pfe.SalleDeSport.Entity.Admin;
 import com.pfe.SalleDeSport.Repository.AdminRepository;
 import com.pfe.SalleDeSport.Service.AdminService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +19,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping(value = "/admin")
 public class AdminRestController {
+    @Autowired
+    private SessionTokens sessionTokens;
 
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -29,7 +32,13 @@ public class AdminRestController {
     AdminService adminService;
 
     @RequestMapping(method = RequestMethod.POST )
+    @PreAuthorize("@accountAccess.isSuperAdmin(authentication)")
     ResponseEntity<?> AjouterAdmin (@RequestBody Admin admin){
+        admin.setId(null);
+        validateRole(admin.getRole());
+        if (admin.getEmail() == null || admin.getEmail().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
         HashMap<String, Object> response = new HashMap<>();
         if(adminRepository.existsByEmail(admin.getEmail())){
             response.put("message", "email exist deja !");
@@ -41,14 +50,29 @@ public class AdminRestController {
     }
 
     @RequestMapping(value = "/{id}" ,method = RequestMethod.PUT)
+    @PreAuthorize("@accountAccess.isSuperAdmin(authentication)")
     public Admin modifieradmin(@PathVariable("id")Long id, @RequestBody Admin admin){
-        admin.setMp(this.bCryptPasswordEncoder.encode(admin.getMp()));
-        Admin savedUser = adminRepository.save(admin);
-        Admin newAdmin = adminService.modifierAdmin(admin);
-        return newAdmin;
+        validateRole(admin.getRole());
+        if (admin.getEmail() == null || admin.getEmail().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
+        Admin existing = adminRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        existing.setNom(admin.getNom());
+        existing.setPrenom(admin.getPrenom());
+        if (!admin.getEmail().equalsIgnoreCase(existing.getEmail()) && adminRepository.existsByEmail(admin.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+        }
+        existing.setEmail(admin.getEmail());
+        existing.setRole(admin.getRole());
+        if (admin.getMp() != null && !admin.getMp().isBlank()) {
+            existing.setMp(bCryptPasswordEncoder.encode(admin.getMp()));
+        }
+        return adminService.modifierAdmin(existing);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE )
+    @PreAuthorize("@accountAccess.isSuperAdmin(authentication)")
     public void suppAdmin(@PathVariable("id") Long id){
         adminService.supprimerAdmin(id);
     }
@@ -58,34 +82,20 @@ public class AdminRestController {
         return adminService.afficherAdmin();
     }
 
+    private void validateRole(String role) {
+        if (!AccountAccess.SUPER_ADMIN.equals(role) && !"Sous Administrateur".equals(role)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid administrator role");
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> loginAdmin(@RequestBody Admin admin) {
-        System.out.println("in login-admin"+admin);
-        HashMap<String, Object> response = new HashMap<>();
-
-        Admin userFromDB = adminRepository.findAdminByEmail(admin.getEmail());
-        System.out.println("userFromDB+admin"+userFromDB);
-        if (userFromDB == null) {
-            response.put("message", "Admin not found !");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } else {
-            boolean compare = this.bCryptPasswordEncoder.matches(admin.getMp(), userFromDB.getMp());
-            System.out.println("compare"+compare);
-            if (!compare) {
-                response.put("message", "admin not found !");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }else
-            {
-                String token = Jwts.builder()
-                        .claim("data", userFromDB)
-                        .signWith(SignatureAlgorithm.HS256, "SECRET")
-                        .compact();
-                response.put("token", token);
-                response.put("role",userFromDB.getRole());
-
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
+        Admin account = admin.getEmail() == null ? null : adminRepository.findAdminByEmail(admin.getEmail());
+        if (account == null || admin.getMp() == null || !bCryptPasswordEncoder.matches(admin.getMp(), account.getMp())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Identifiants invalides"));
         }
+        String token = sessionTokens.issue("admin", account.getId(), account.getPrenom(), account.getNom());
+        return ResponseEntity.ok(Map.of("token", token, "role", account.getRole() == null ? "" : account.getRole()));
     }
 
     @RequestMapping(value = "/{id}" , method = RequestMethod.GET)
