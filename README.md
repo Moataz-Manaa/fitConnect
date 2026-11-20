@@ -115,9 +115,9 @@ npm run build
 npm test -- --configuration=ci --watch=false --browsers=ChromeHeadless
 ```
 
-Les builds sont générés dans `frontend/dist/frontend` et `admin/dist/admin`. Le profil `ci` exécute les suites ciblées. Les suites Angular complètes présentent encore des erreurs d’import dans les tests historiques du service d’authentification côté client et du service de notification côté admin.
+Les builds sont générés dans `frontend/dist/frontend` et `admin/dist/admin`. La commande de test ci-dessus exécute les suites ciblées en local. Les suites Angular complètes présentent encore des erreurs d’import dans les tests historiques du service d’authentification côté client et du service de notification côté admin.
 
-Dans `backend`, lancez `.\mvnw.cmd -B -ntp verify` sous PowerShell ou `bash ./mvnw -B -ntp verify` sous macOS et Linux. Les tests utilisent H2 en mode de compatibilité MySQL et simulent les services de paiement. [GitHub Actions](.github/workflows/ci.yml) exécute les builds et ces suites à chaque push et pull request.
+Dans `backend`, lancez `.\mvnw.cmd -B -ntp verify` sous PowerShell ou `bash ./mvnw -B -ntp verify` sous macOS et Linux. Les tests utilisent H2 en mode de compatibilité MySQL et simulent les services de paiement.
 
 ## Déploiement
 
